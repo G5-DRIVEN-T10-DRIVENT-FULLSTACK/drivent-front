@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import api from '../../../services/api';
 
 function ProblemMessage({ hotelProblem }) {
-  if (hotelProblem === 'NoHotel') {
+  if (hotelProblem.includes('status code 401')) {
     return (
       <>
         <ProblemText>
@@ -44,6 +44,8 @@ function HotelChoice({ hotelProblem, hotels }) {
         </Hotels>
       </>
     );
+  } else {
+    return <></>;
   }
 }
 // function RoomChoice() {
@@ -81,7 +83,7 @@ export default function Hotel() {
       /* eslint-disable-next-line no-console */
       console.log(response);
       /* eslint-disable-next-line no-console */
-      
+
       setAccommodation(response.data.accommodation);
       setVacancies(response.data.vacancies);
       console.log('response.data.hotels', response.data.hotels);
