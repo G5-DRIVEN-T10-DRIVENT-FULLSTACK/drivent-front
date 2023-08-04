@@ -40,13 +40,17 @@ function HotelChoice({ hotelProblem, hotels }) {
   const handleContainerClick = (hotelId) => {
     const newObject = {};
     console.log(hotelId);
+    console.log('hotelClickedStates', hotelClickedStates);
+
     for (const key in hotelClickedStates) {
-      if (Number(key) !== hotelId) {
-        newObject[key] = hotelClickedStates[hotelId];
-        console.log('key', key);
+      if (Number(key) !== Number(hotelId)) {
+        console.log('hotelClickedStates[Number(hotelId)]', hotelClickedStates[Number(hotelId)]);
+        newObject[Number(key)] = hotelClickedStates[Number(key)];
+        console.log('===========', key);
       } else {
-        newObject[key] = !hotelClickedStates[hotelId];
-        console.log('yek', key);
+        newObject[Number(key)] = !hotelClickedStates[Number(key)];
+        console.log('hotelClickedStates[Number(hotelId)]', hotelClickedStates[Number(hotelId)]);
+        console.log('!!!!!!!!!!!', key);
       }
     }
     setHotelClickedStates(newObject);
