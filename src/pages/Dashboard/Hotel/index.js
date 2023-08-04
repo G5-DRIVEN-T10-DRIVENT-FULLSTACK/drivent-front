@@ -44,13 +44,13 @@ function HotelChoice({ hotelProblem, hotels }) {
 
     for (const key in hotelClickedStates) {
       if (Number(key) !== Number(hotelId)) {
-        console.log('hotelClickedStates[Number(hotelId)]', hotelClickedStates[Number(hotelId)]);
-        newObject[Number(key)] = hotelClickedStates[Number(key)];
-        console.log('===========', key);
+        // console.log('hotelClickedStates[Number(hotelId)]', hotelClickedStates[Number(key)]);
+        newObject[Number(key)] = false
+        // console.log('===========', key);
       } else {
-        newObject[Number(key)] = !hotelClickedStates[Number(key)];
-        console.log('hotelClickedStates[Number(hotelId)]', hotelClickedStates[Number(hotelId)]);
-        console.log('!!!!!!!!!!!', key);
+        newObject[Number(key)] = !hotelClickedStates[Number(hotelId)];
+        // console.log('hotelClickedStates[Number(hotelId)]', hotelClickedStates[Number(hotelId)]);
+        // console.log('!!!!!!!!!!!', key);
       }
     }
     setHotelClickedStates(newObject);
