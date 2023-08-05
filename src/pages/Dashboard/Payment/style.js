@@ -84,3 +84,98 @@ export const TicketResume = styled.div`
   font-family: 'Roboto', sans-serif;
 `;
 
+export const CreditCardForm = styled.form`
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  padding-top: 15px;
+  font-family: 'Roboto', sans-serif;
+
+  label{
+      color: #A4A4A4;
+      margin-top: 5px;
+    }
+`;
+
+export const CreditCardContainer = styled.div`
+  display: flex;
+  gap: 35px;
+  
+  >div{
+    margin: 0;
+  }
+`;
+
+export const CreditCardData = styled.div`
+  display: flex;
+  flex-direction: column;
+`;
+
+export const CreditCardInput = styled.input`
+  width: 100%;
+  height: 43px;
+  border-radius: 6px;
+  border: 1px solid #A4A4A4;
+  ::placeholder {
+    color: #A4A4A4;
+  }
+`;
+
+export const CreditCardInputSeparator = styled.div`
+  margin-top: 15px;
+  display: flex;
+  gap: 15px;
+
+`;
+
+export const CreditCardName = styled(CreditCardInput)`
+  margin-top: 15px;
+`;
+
+export const CreditCardValidity = styled(CreditCardInput)`
+  width: 67%;
+`;
+
+export const CreditCardCVC = styled(CreditCardInput)`
+  width: 30%;
+`;
+
+export const PaymentButton = styled(BookingButton)`
+  width: 180px;
+  margin-top: 45px;
+`;
+
+export const PaymentMessageContainer = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  font-family: 'Roboto', sans-serif;
+
+  >svg{
+    font-size: 44px;
+    fill: #36B853;
+  }
+`;
+
+export const PaymentMessage = styled.p`
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 18.75px;
+  color: #454545;
+`;
+
+export const WarningMessageContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+
+  p{
+    font-family: 'Roboto', sans-serif;
+    color: #8E8E8E;
+    font-weight: 400;
+    font-size: 20px;
+    line-height: 23.44px;
+  }
+`;
