@@ -26,7 +26,7 @@ const Container = styled.div`
   padding: 30px;
   height: 100%;
   width: 100%;
-  overflow-y: auto;
+  /*overflow-y: auto;*/
 
   @media (max-width: 600px) {
     height: calc(100vh - 80px);
