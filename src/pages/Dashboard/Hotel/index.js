@@ -1,8 +1,105 @@
 /* eslint-disable */
 import styled from 'styled-components';
 import Typography from '@material-ui/core/Typography';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Fragment } from 'react';
 import api from '../../../services/api';
+import { BsPerson, BsPersonFill } from 'react-icons/bs';
+import UserContext from '../../../contexts/UserContext';
+import { useContext } from 'react';
+
+function RoomsHeadingTitle({ showRooms, hotelClickedStates, vacancies }) {
+  // console.log('hotelClickedStates', hotelClickedStates);
+  // console.log(Object.keys(hotelClickedStates).find((hotelId) => hotelClickedStates[hotelId] === true));
+  // console.log('showRooms', showRooms);
+
+  if (showRooms) {
+    const hotelId = Object.keys(hotelClickedStates).find((hotelId) => hotelClickedStates[hotelId] === true);
+    // console.log('hotelId', hotelId);
+    console.log('vacancies', vacancies);
+    console.log('vacancies.capacity', vacancies.capacity);
+    const hotelsIdArrays = vacancies.hotelIdArray;
+    // console.log('hotelsIdArrays', hotelsIdArrays);
+    // console.log('hotelId', hotelId);
+    const roomsKeys = Object.keys(hotelsIdArrays).filter((key) => Number(hotelsIdArrays[key]) === Number(hotelId));
+    console.log('roomsKeys', roomsKeys);
+    const choisenRoom = true;
+    const fullRoom = true;
+
+    function renderIcon(cap) {
+      for (let i = 0; i < cap; i++) {
+        return (
+          <>
+            <BsPerson size={30} />
+          </>
+        );
+      }
+    }
+
+    return (
+      <>
+        <RoomChoice>
+          <RoomsHeadingTitleStyle>Ótima pedida! Agora escolha seu quarto:</RoomsHeadingTitleStyle>
+          <AllRoomsContainer>
+            {/* {roomsKeys.map((roomId) => (
+              <RoomContainer key={roomId}>
+                <RoomInfo>
+                  <RoomId fullRoom={fullRoom}>{roomId}</RoomId>
+                  <RoomIcons>{renderIcon(vacancies.capacity[roomId])}</RoomIcons>
+                </RoomInfo>
+              </RoomContainer>
+            ))} */}
+            <RoomContainer fullRoom={true}>
+              <RoomInfo>
+                <RoomId fullRoom={fullRoom}>101</RoomId>
+                <RoomIcons>
+                  {choisenRoom ? (
+                    <BsPersonFill size={30} color={fullRoom ? '#8C8C8C' : '#000000'} />
+                  ) : (
+                    <BsPerson size={30} />
+                  )}
+                  {choisenRoom ? (
+                    <BsPersonFill size={30} color={fullRoom ? '#8C8C8C' : '#000000'} />
+                  ) : (
+                    <BsPerson size={30} />
+                  )}
+                  {choisenRoom ? (
+                    <BsPersonFill size={30} color={fullRoom ? '#8C8C8C' : '#000000'} />
+                  ) : (
+                    <BsPerson size={30} />
+                  )}
+                </RoomIcons>
+              </RoomInfo>
+            </RoomContainer>
+            <RoomContainer fullRoom={fullRoom}>
+              <RoomInfo>
+                <RoomId fullRoom={fullRoom}>101</RoomId>
+                <RoomIcons>
+                  {choisenRoom ? (
+                    <BsPersonFill size={30} color={fullRoom ? '#8C8C8C' : '#000000'} />
+                  ) : (
+                    <BsPerson size={30} />
+                  )}
+                  {choisenRoom ? (
+                    <BsPersonFill size={30} color={fullRoom ? '#8C8C8C' : '#000000'} />
+                  ) : (
+                    <BsPerson size={30} />
+                  )}
+                  {choisenRoom ? (
+                    <BsPersonFill size={30} color={fullRoom ? '#8C8C8C' : '#000000'} />
+                  ) : (
+                    <BsPerson size={30} />
+                  )}
+                </RoomIcons>
+              </RoomInfo>
+            </RoomContainer>
+          </AllRoomsContainer>
+        </RoomChoice>
+      </>
+    );
+  } else {
+    return <></>;
+  }
+}
 
 function ProblemMessage({ hotelProblem }) {
   if (hotelProblem.includes('status code 401')) {
@@ -24,88 +121,107 @@ function ProblemMessage({ hotelProblem }) {
     return <></>;
   }
 }
-/* eslint-disable-next-line no-console */
-function HotelChoice({ hotelProblem, hotels }) {
+function HotelChoice({ hotelProblem, hotels, vacancies }) {
+  const [hotelClickedStates, setHotelClickedStates] = useState({});
+  const [showRooms, setShowRooms] = useState(false);
+
+  useEffect(() => {
+    // Inicialize o objeto de estados vazio
+    const initialClickedStates = {};
+    hotels.forEach((hotel) => {
+      initialClickedStates[hotel.id] = false;
+    });
+    setHotelClickedStates(initialClickedStates);
+    // console.log('initialClickedStates', initialClickedStates);
+  }, [hotels]);
+
+  const handleContainerClick = (hotelId) => {
+    const newObject = {};
+    // console.log(hotelId);
+    // console.log('hotelClickedStates', hotelClickedStates);
+
+    for (const key in hotelClickedStates) {
+      if (Number(key) !== Number(hotelId)) {
+        newObject[Number(key)] = false;
+      } else {
+        newObject[Number(key)] = !hotelClickedStates[Number(hotelId)];
+      }
+    }
+    setHotelClickedStates(newObject);
+    setShowRooms(!!Object.keys(newObject).filter((ch) => newObject[ch] === true).length);
+    // console.log(showRooms);
+    // console.log(newObject);
+  };
+
   if (hotelProblem === 'NoError') {
+    console.log(hotels);
     return (
       <>
         <HotelChoiceContainer>Primeiro, escolha seu hotel</HotelChoiceContainer>
-        <Hotels>
-          {hotels.map((h) => (
-            <HotelInfoContainer key={h.id}>
-              <HotelImage src={h.image} />
-              <HotelName>{h.name}</HotelName>
-              <HotelSubtitle>Tipos de acomodação:</HotelSubtitle>
-              <HotelInfo>{h.accommodation}</HotelInfo>
-              <HotelSubtitle>Vagas disponíves</HotelSubtitle>
-              <HotelInfo>{h.vacanciesSum}</HotelInfo>
-            </HotelInfoContainer>
-          ))}
-        </Hotels>
+        <HotelsContainer>
+          <Hotels>
+            {hotels.map((h) => (
+              <HotelInfoContainer
+                clicked={hotelClickedStates[h.id]}
+                onClick={() => handleContainerClick(h.id)}
+                key={h.id}
+              >
+                <HotelImage src={h.image} />
+                <HotelName>{h.name}</HotelName>
+                <HotelSubtitle>Tipos de acomodação:</HotelSubtitle>
+                <HotelInfo>{h.accommodation}</HotelInfo>
+                <HotelSubtitle>Vagas disponíves</HotelSubtitle>
+                <HotelInfo>{h.vacanciesSum}</HotelInfo>
+              </HotelInfoContainer>
+            ))}
+          </Hotels>
+          <RoomsHeadingTitle showRooms={showRooms} hotelClickedStates={hotelClickedStates} vacancies={vacancies} />
+        </HotelsContainer>
       </>
     );
   } else {
     return <></>;
   }
 }
-// function RoomChoice() {
-//   return (
-//     <>
-//       <p>roomchoice</p>
-//     </>
-//   );
-// }
-// function ShowOrder() {
-//   return (
-//     <>
-//       <p>showOrder</p>
-//     </>
-//   );
-// }
 
 export default function Hotel() {
-  /* eslint-disable-next-line */
+  const { userData } = useContext(UserContext);
   const [hotelProblemKind, setHotelProblemKind] = useState('NoError');
-  /* eslint-disable-next-line */
   const [hotels, setHotels] = useState([]);
-  const [accommodation, setAccommodation] = useState([]);
+  const [accommodations, setAccommodation] = useState({});
   const [vacancies, setVacancies] = useState([]);
-  /* eslint-disable-next-line */
   const [ticketType, setTicketType] = useState('');
   async function getHotels() {
     try {
       const response = await api.get('/hotels/superGet', {
         headers: {
-          Authorization:
-            'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsImlhdCI6MTY5MDk1MTkzN30.1iNeNt7l-K4qAtWJ1VvfGdZMFR2kZeMFjXRe7c0erxs',
+          Authorization: `Bearer ${userData.token}`,
         },
       });
-      /* eslint-disable-next-line no-console */
-      console.log(response);
-      /* eslint-disable-next-line no-console */
+
+      // console.log(response.data.accommodation);
+      console.log(response.data);
+      const roomsObject = response.data.rooms;
+      const vacanciesObject = response.data.vacancies;
+
+      const capacityArray = roomsObject.reduce((acc, room) => {
+        acc.push(room.capacity);
+        return acc;
+      }, []);
+      vacanciesObject.capacity = capacityArray;
+      // console.log(vacanciesObject);
 
       setAccommodation(response.data.accommodation);
-      setVacancies(response.data.vacancies);
-      console.log('response.data.hotels', response.data.hotels);
-      console.log('response.data.accommodation', response.data.accommodation);
-      console.log('response.data.vacancies', response.data.vacancies);
+      setVacancies(vacanciesObject);
+
+      // console.log('response.data.hotels', response.data.hotels);
+      // console.log('response.data.hotels', response.data.hotels);
+      // console.log('response.data.accommodation', response.data.accommodation);
+      // console.log('response.data.vacancies', response.data.vacancies);
       return setHotels(response.data.hotels);
     } catch (error) {
-      // /* eslint-disable-next-line no-console */
-      // console.log(error);
-      // /* eslint-disable-next-line no-console */
-      // console.log(error.message);
       return setHotelProblemKind(error.message);
     }
-
-    // const error = response.catch(() => {
-    //   /* eslint-disable-next-line no-console */
-    //   console.log(error);
-    // });
-    // /* eslint-disable-next-line no-console */
-    // console.log(response);
-    // /* eslint-disable-next-line no-console */
-    // console.log(response);
   }
 
   async function isRemoteFunc() {
@@ -116,32 +232,17 @@ export default function Hotel() {
             'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsImlhdCI6MTY5MDk1MTkzN30.1iNeNt7l-K4qAtWJ1VvfGdZMFR2kZeMFjXRe7c0erxs',
         },
       });
-      // /* eslint-disable-next-line no-console */
-      // console.log('isRemoteFunc', response.data[0].isRemote);
       if (response.data[0].isRemote === true) {
         return setHotelProblemKind('status code 402');
       }
       return setTicketType(response.data);
     } catch (error) {
-      // /* eslint-disable-next-line no-console */
-      // console.log(error);
       /* eslint-disable-next-line no-console */
       console.log(error.message);
-      // return setTicketType(error.message);
     }
-
-    // const error = response.catch(() => {
-    //   /* eslint-disable-next-line no-console */
-    //   console.log(error);
-    // });
-    // /* eslint-disable-next-line no-console */
-    // console.log(response);
-    // /* eslint-disable-next-line no-console */
-    // console.log(response);
   }
 
   useEffect(() => {
-    //Runs only on the first render
     getHotels();
     isRemoteFunc();
   }, []);
@@ -150,13 +251,9 @@ export default function Hotel() {
     <>
       <StyledTypography variant="h4">Escolha de hotel e quarto</StyledTypography>
       <HotelContent>
-        {/* <ProblemMessage hotelProblem={hotelProblemKind} /> */}
         <ProblemMessage hotelProblem={hotelProblemKind} />
-        <HotelChoice hotels={hotels} hotelProblem={hotelProblemKind} />
+        <HotelChoice hotels={hotels} hotelProblem={hotelProblemKind} vacancies={vacancies} />
       </HotelContent>
-
-      {/* <RoomChoice />
-      <ShowOrder /> */}
     </>
   );
 }
@@ -201,20 +298,14 @@ const HotelChoiceContainer = styled.div`
 const HotelInfoContainer = styled.div`
   width: 196px;
   height: 264px;
-  background-color: #ebebeb;
+  background-color: ${(props) => (props.clicked ? '#FFEED2' : '#ebebeb')};
   border-radius: 20px;
   margin-right: 20px;
   margin-top: 33px;
   padding: 15px;
-  /* display: flex;
-  flex-direction: column; */
 `;
 
-const Hotels = styled.div`
-  /* width: 196px;
-  height: 264px;
-  background-color: #ebebeb;
-  border-radius: 20px; */
+const HotelsContainer = styled.div`
   position: absolute;
   top: 0px;
   left: 0px;
@@ -244,4 +335,56 @@ const HotelSubtitle = styled.h2`
 const HotelInfo = styled.h3`
   font-size: 12px;
   font-weight: 400;
+`;
+
+const Hotels = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+`;
+
+const RoomsHeadingTitleStyle = styled.p`
+  color: #8e8e8e;
+  font-size: 20px;
+  font-weight: 400;
+  margin-top: 50px;
+  margin-bottom: 30px;
+`;
+
+const RoomContainer = styled.div`
+  /* background-color: ; */
+  width: 190px;
+  height: 45px;
+  border: solid 1px #cecece;
+  border-radius: 5px;
+  margin-right: 15px;
+  margin-bottom: 5px;
+  /* color: ${(props) => (props.fullRoom ? '#e9e9e9' : '#454545')}; */
+  ${(props) => (props.fullRoom ? 'background-color: #e9e9e9;' : '')}
+`;
+
+const RoomChoice = styled.div`
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 50px;
+`;
+
+const AllRoomsContainer = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+`;
+
+const RoomId = styled.div`
+  font-size: 20px;
+  font-weight: 700;
+  color: ${(props) => (props.fullRoom ? '#9d9d9d' : '#454545')};
+`;
+
+const RoomIcons = styled.div`
+  display: flex;
+`;
+const RoomInfo = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 5px;
 `;
