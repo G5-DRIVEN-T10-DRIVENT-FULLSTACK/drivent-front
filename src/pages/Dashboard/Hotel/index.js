@@ -1,19 +1,99 @@
 /* eslint-disable */
 import styled from 'styled-components';
 import Typography from '@material-ui/core/Typography';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Fragment } from 'react';
 import api from '../../../services/api';
+import { BsPerson, BsPersonFill } from 'react-icons/bs';
+import UserContext from '../../../contexts/UserContext';
+import { useContext } from 'react';
 
-function RoomsHeadingTitle({ showRooms, hotelClickedStates }) {
+function RoomsHeadingTitle({ showRooms, hotelClickedStates, vacancies }) {
   // console.log('hotelClickedStates', hotelClickedStates);
   // console.log(Object.keys(hotelClickedStates).find((hotelId) => hotelClickedStates[hotelId] === true));
   // console.log('showRooms', showRooms);
-  const hotelId = Object.keys(hotelClickedStates).find((hotelId) => hotelClickedStates[hotelId] === true);
-  console.log('hotelId', hotelId);
+
   if (showRooms) {
+    const hotelId = Object.keys(hotelClickedStates).find((hotelId) => hotelClickedStates[hotelId] === true);
+    // console.log('hotelId', hotelId);
+    console.log('vacancies', vacancies);
+    console.log('vacancies.capacity', vacancies.capacity);
+    const hotelsIdArrays = vacancies.hotelIdArray;
+    // console.log('hotelsIdArrays', hotelsIdArrays);
+    // console.log('hotelId', hotelId);
+    const roomsKeys = Object.keys(hotelsIdArrays).filter((key) => Number(hotelsIdArrays[key]) === Number(hotelId));
+    console.log('roomsKeys', roomsKeys);
+    const choisenRoom = true;
+    const fullRoom = true;
+
+    function renderIcon(cap) {
+      for (let i = 0; i < cap; i++) {
+        return (
+          <>
+            <BsPerson size={30} />
+          </>
+        );
+      }
+    }
+
     return (
       <>
-        <RoomsHeadingTitleStyle>Ótima pedida! Agora escolha seu quarto:</RoomsHeadingTitleStyle>
+        <RoomChoice>
+          <RoomsHeadingTitleStyle>Ótima pedida! Agora escolha seu quarto:</RoomsHeadingTitleStyle>
+          <AllRoomsContainer>
+            {/* {roomsKeys.map((roomId) => (
+              <RoomContainer key={roomId}>
+                <RoomInfo>
+                  <RoomId fullRoom={fullRoom}>{roomId}</RoomId>
+                  <RoomIcons>{renderIcon(vacancies.capacity[roomId])}</RoomIcons>
+                </RoomInfo>
+              </RoomContainer>
+            ))} */}
+            <RoomContainer fullRoom={true}>
+              <RoomInfo>
+                <RoomId fullRoom={fullRoom}>101</RoomId>
+                <RoomIcons>
+                  {choisenRoom ? (
+                    <BsPersonFill size={30} color={fullRoom ? '#8C8C8C' : '#000000'} />
+                  ) : (
+                    <BsPerson size={30} />
+                  )}
+                  {choisenRoom ? (
+                    <BsPersonFill size={30} color={fullRoom ? '#8C8C8C' : '#000000'} />
+                  ) : (
+                    <BsPerson size={30} />
+                  )}
+                  {choisenRoom ? (
+                    <BsPersonFill size={30} color={fullRoom ? '#8C8C8C' : '#000000'} />
+                  ) : (
+                    <BsPerson size={30} />
+                  )}
+                </RoomIcons>
+              </RoomInfo>
+            </RoomContainer>
+            <RoomContainer fullRoom={fullRoom}>
+              <RoomInfo>
+                <RoomId fullRoom={fullRoom}>101</RoomId>
+                <RoomIcons>
+                  {choisenRoom ? (
+                    <BsPersonFill size={30} color={fullRoom ? '#8C8C8C' : '#000000'} />
+                  ) : (
+                    <BsPerson size={30} />
+                  )}
+                  {choisenRoom ? (
+                    <BsPersonFill size={30} color={fullRoom ? '#8C8C8C' : '#000000'} />
+                  ) : (
+                    <BsPerson size={30} />
+                  )}
+                  {choisenRoom ? (
+                    <BsPersonFill size={30} color={fullRoom ? '#8C8C8C' : '#000000'} />
+                  ) : (
+                    <BsPerson size={30} />
+                  )}
+                </RoomIcons>
+              </RoomInfo>
+            </RoomContainer>
+          </AllRoomsContainer>
+        </RoomChoice>
       </>
     );
   } else {
@@ -41,7 +121,7 @@ function ProblemMessage({ hotelProblem }) {
     return <></>;
   }
 }
-function HotelChoice({ hotelProblem, hotels }) {
+function HotelChoice({ hotelProblem, hotels, vacancies }) {
   const [hotelClickedStates, setHotelClickedStates] = useState({});
   const [showRooms, setShowRooms] = useState(false);
 
@@ -74,6 +154,7 @@ function HotelChoice({ hotelProblem, hotels }) {
   };
 
   if (hotelProblem === 'NoError') {
+    console.log(hotels);
     return (
       <>
         <HotelChoiceContainer>Primeiro, escolha seu hotel</HotelChoiceContainer>
@@ -94,7 +175,7 @@ function HotelChoice({ hotelProblem, hotels }) {
               </HotelInfoContainer>
             ))}
           </Hotels>
-          <RoomsHeadingTitle showRooms={showRooms} hotelClickedStates={hotelClickedStates} />
+          <RoomsHeadingTitle showRooms={showRooms} hotelClickedStates={hotelClickedStates} vacancies={vacancies} />
         </HotelsContainer>
       </>
     );
@@ -104,22 +185,36 @@ function HotelChoice({ hotelProblem, hotels }) {
 }
 
 export default function Hotel() {
+  const { userData } = useContext(UserContext);
   const [hotelProblemKind, setHotelProblemKind] = useState('NoError');
   const [hotels, setHotels] = useState([]);
-  const [accommodation, setAccommodation] = useState([]);
+  const [accommodations, setAccommodation] = useState({});
   const [vacancies, setVacancies] = useState([]);
   const [ticketType, setTicketType] = useState('');
   async function getHotels() {
     try {
       const response = await api.get('/hotels/superGet', {
         headers: {
-          Authorization:
-            'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsImlhdCI6MTY5MDk1MTkzN30.1iNeNt7l-K4qAtWJ1VvfGdZMFR2kZeMFjXRe7c0erxs',
+          Authorization: `Bearer ${userData.token}`,
         },
       });
 
+      // console.log(response.data.accommodation);
+      console.log(response.data);
+      const roomsObject = response.data.rooms;
+      const vacanciesObject = response.data.vacancies;
+
+      const capacityArray = roomsObject.reduce((acc, room) => {
+        acc.push(room.capacity);
+        return acc;
+      }, []);
+      vacanciesObject.capacity = capacityArray;
+      // console.log(vacanciesObject);
+
       setAccommodation(response.data.accommodation);
-      setVacancies(response.data.vacancies);
+      setVacancies(vacanciesObject);
+
+      // console.log('response.data.hotels', response.data.hotels);
       // console.log('response.data.hotels', response.data.hotels);
       // console.log('response.data.accommodation', response.data.accommodation);
       // console.log('response.data.vacancies', response.data.vacancies);
@@ -157,7 +252,7 @@ export default function Hotel() {
       <StyledTypography variant="h4">Escolha de hotel e quarto</StyledTypography>
       <HotelContent>
         <ProblemMessage hotelProblem={hotelProblemKind} />
-        <HotelChoice hotels={hotels} hotelProblem={hotelProblemKind} />
+        <HotelChoice hotels={hotels} hotelProblem={hotelProblemKind} vacancies={vacancies} />
       </HotelContent>
     </>
   );
@@ -253,4 +348,43 @@ const RoomsHeadingTitleStyle = styled.p`
   font-weight: 400;
   margin-top: 50px;
   margin-bottom: 30px;
+`;
+
+const RoomContainer = styled.div`
+  /* background-color: ; */
+  width: 190px;
+  height: 45px;
+  border: solid 1px #cecece;
+  border-radius: 5px;
+  margin-right: 15px;
+  margin-bottom: 5px;
+  /* color: ${(props) => (props.fullRoom ? '#e9e9e9' : '#454545')}; */
+  ${(props) => (props.fullRoom ? 'background-color: #e9e9e9;' : '')}
+`;
+
+const RoomChoice = styled.div`
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 50px;
+`;
+
+const AllRoomsContainer = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+`;
+
+const RoomId = styled.div`
+  font-size: 20px;
+  font-weight: 700;
+  color: ${(props) => (props.fullRoom ? '#9d9d9d' : '#454545')};
+`;
+
+const RoomIcons = styled.div`
+  display: flex;
+`;
+const RoomInfo = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 5px;
 `;
