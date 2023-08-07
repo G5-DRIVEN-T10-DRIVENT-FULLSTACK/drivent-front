@@ -150,6 +150,7 @@ export const PaymentMessageContainer = styled.div`
   align-items: center;
   gap: 15px;
   font-family: 'Roboto', sans-serif;
+  padding-top: 15px;
 
   >svg{
     font-size: 44px;

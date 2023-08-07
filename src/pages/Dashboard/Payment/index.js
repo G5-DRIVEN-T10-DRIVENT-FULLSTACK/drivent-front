@@ -1,4 +1,3 @@
-/* eslint-disable */
 import { useContext, useEffect, useState } from 'react';
 import UserContext from '../../../contexts/UserContext';
 import * as ticketApi from '../../../services/ticketApi';
@@ -36,6 +35,7 @@ import { BsCheckCircleFill } from 'react-icons/bs';
 export default function Payment() {
   const { userData } = useContext(UserContext);
   const [enrollment, setEnrollment] = useState(null);
+  const [userTicket, setUserTicket] = useState(null);
   const [ticketType, setTicketType] = useState([]);
   const [selectedTicket, setSelectedTicket] = useState(false);
   const [hotel, setHotel] = useState({ option: null, value: null });
@@ -52,6 +52,7 @@ export default function Payment() {
 
   useEffect(() => {
     getUserEnrollment();
+    verifyUserTicket();
     getTicketTypes();
   }, []);
 
@@ -60,7 +61,7 @@ export default function Payment() {
       const data = await getPersonalInformations(userData.token);
       setEnrollment(data);
     } catch (err) {
-      console.log(err);
+      console.log(err.response.data);
     }
   }
 
@@ -69,16 +70,24 @@ export default function Payment() {
       const data = await ticketApi.getTicketTypes(userData.token);
       setTicketType(data);
     } catch (err) {
-      console.log(err);
+      console.log(err.response.data);
     }
   }
 
-  //TODO: corrigir erro - comprar qualquer tipo de ingresso está considerando o mesmo valor (250)
-  //TODO: corrigir erro - quantidade de caracteres nos inputs do cartão de crédito
+  async function verifyUserTicket() {
+    try {
+      const data = await ticketApi.getTicketByUser(userData.token);
+      setUserTicket(data);
+    } catch (err) {
+      console.log(err.response.data);
+    }
+  }
 
   async function handleTicketBooking(ticketTypeId) {
+    const ticketWithHotel = ticketType.filter(t => t.includesHotel === true);
+
     try {
-      const data = await ticketApi.bookTicket(userData.token, ticketTypeId);
+      const data = await ticketApi.bookTicket(userData.token, hotel.option === true ? ticketWithHotel[0]?.id : ticketTypeId);
       toast('Ingresso reservado com sucesso!');
       setUserBookedTicket(data);
       setTicketIsBooked(true);
@@ -97,17 +106,18 @@ export default function Payment() {
         name: cardData.name,
         expirationDate: cardData.expiry,
         cvv: cardData.cvc
-      }
+      };
+
       const body = {
-        ticketId: userBookedTicket.id,
+        ticketId: userTicket ? userTicket.id : userBookedTicket.id,
         cardData: cardParams
-      }
+      };
 
       const data = await paymentProcess(userData.token, body);
       toast('Ingresso pago com sucesso!');
       setIsTicketPaid(true);
     } catch (err) {
-
+      console.log(err);
     }
   }
 
@@ -119,38 +129,38 @@ export default function Payment() {
     const { name, value } = evt.target;
 
     setCardData((prev) => ({ ...prev, [name]: value }));
-  }
+  };
 
   const handleInputFocus = (evt) => {
     setCardData((prev) => ({ ...prev, focus: evt.target.name }));
-  }
+  };
 
   return (
     <>
       <StyledTypography variant="h4" > Ingresso e pagamento</StyledTypography>
-      {ticketIsBooked ?
+      {ticketIsBooked || userTicket ?
         <>
           <StyledParagraph>Ingresso escolhido</StyledParagraph>
-          {selectedTicket.name === 'Online' ?
+          {selectedTicket.name === 'Online' || userTicket?.TicketType.name === 'Online' ?
             <TicketResume>
-              <Description>{`${selectedTicket.name}`}</Description>
-              <Price>{`R$ ${selectedTicket.price}`}</Price>
+              <Description>{`${userTicket ? userTicket.TicketType.name : selectedTicket.name}`}</Description>
+              <Price>{`R$ ${userTicket ? userTicket.TicketType.price : selectedTicket.price}`}</Price>
             </TicketResume>
             :
             <TicketResume>
-              <Description>{`${selectedTicket.name} + ${hotel.option}`}</Description>
-              <Price>{`R$ ${selectedTicket.price + hotel.value}`}</Price>
+              <Description>{`${userTicket?.TicketType ? userTicket.TicketType.name : selectedTicket.name} + ${hotel.option === true || userTicket?.TicketType.includesHotel === true ? 'Com Hotel' : 'Sem Hotel'}`}</Description>
+              <Price>{`R$ ${userTicket?.TicketType ? userTicket.TicketType.price : selectedTicket.price + hotel.value}`}</Price>
             </TicketResume>
           }
 
-          {isTicketPaid ?
+          <StyledParagraph>Pagamento</StyledParagraph>
+          {isTicketPaid || userTicket?.status === 'PAID' ?
             <PaymentMessageContainer>
               <BsCheckCircleFill />
               <PaymentMessage><StyledSpan>Pagamento confirmado!</StyledSpan> <br />Prossiga para escolha de hospedagem e atividades</PaymentMessage>
             </PaymentMessageContainer>
             :
             <>
-              <StyledParagraph>Pagamento</StyledParagraph>
               <CreditCardForm onSubmit={finishPayment}>
                 <CreditCardContainer>
                   <Cards
@@ -162,14 +172,16 @@ export default function Payment() {
                   />
                   <CreditCardData>
                     <CreditCardInput
-                      type="number"
+                      type="text"
                       name="number"
                       placeholder="Card Number"
-                      min={16}
+                      maxLength="16"
+                      pattern="[0-9]{16}"
                       value={cardData.number}
                       onChange={handleInputChange}
                       onFocus={handleInputFocus}
                       required
+                      title="Por favor, insira um número de cartão válido com 16 dígitos."
                     />
                     <label>E.g.: 49..., 51... 36... 37...</label>
 
@@ -177,32 +189,38 @@ export default function Payment() {
                       type="text"
                       name="name"
                       placeholder="Name"
+                      pattern="[A-Za-zÀ-ÖØ-öø-ÿ\s]*"
                       value={cardData.name}
                       onChange={handleInputChange}
                       onFocus={handleInputFocus}
                       required
+                      title="Por favor, insira um nome válido apenas com letras e espaços."
                     />
                     <CreditCardInputSeparator>
                       <CreditCardValidity
-                        type="number"
+                        type="text"
                         name="expiry"
                         placeholder="Valid Thru"
-                        min={4}
+                        maxLength="4"
+                        pattern="[0-9]*"
                         value={cardData.expiry}
                         onChange={handleInputChange}
                         onFocus={handleInputFocus}
                         required
+                        title="Por favor, insira uma data de validade válida com 4 dígitos numéricos."
                       />
 
                       <CreditCardCVC
-                        type="number"
+                        type="text"
                         name="cvc"
                         placeholder="CVC"
-                        min={3}
+                        maxLength="3"
+                        pattern="[0-9]*"
                         value={cardData.cvc}
                         onChange={handleInputChange}
                         onFocus={handleInputFocus}
                         required
+                        title="Por favor, insira um código CVC válido com 3 dígitos numéricos."
                       />
                     </CreditCardInputSeparator>
                   </CreditCardData>
@@ -221,16 +239,18 @@ export default function Payment() {
               <StyledParagraph>Primeiro, escolha sua modalidade de ingresso</StyledParagraph>
               <ContainerTickets>
                 {ticketType.map(t => {
-                  return (
-                    <TicketType
-                      key={t.id}
-                      name={t.name}
-                      price={t.price}
-                      currentTicket={t}
-                      selectedTicket={selectedTicket}
-                      setSelectedTicket={setSelectedTicket}
-                    />
-                  );
+                  if ((t.isRemote === false && t.includesHotel === false) || (t.isRemote === true)) {
+                    return (
+                      <TicketType
+                        key={t.id}
+                        name={t.name}
+                        price={t.price}
+                        currentTicket={t}
+                        selectedTicket={selectedTicket}
+                        setSelectedTicket={setSelectedTicket}
+                      />
+                    );
+                  }
                 })}
               </ContainerTickets>
 
@@ -245,16 +265,16 @@ export default function Payment() {
                     </>
                   }
 
-                  {!selectedTicket.isRemote && selectedTicket.includesHotel ?
+                  {!selectedTicket.isRemote && !selectedTicket.includesHotel ?
                     <>
                       <ContainerTickets>
-                        <HotelTicket onClick={() => handleHotelOption({ option: 'Sem Hotel', value: 0 })} isSelected={hotel.option === 'Sem Hotel'}>
+                        <HotelTicket onClick={() => handleHotelOption({ option: false, value: 0 })} isSelected={hotel.option === false}>
                           <Description>Sem Hotel</Description>
                           <Price>{'+ R$ 0'}</Price>
                         </HotelTicket>
 
-                        <HotelTicket onClick={() => handleHotelOption({ option: 'Com Hotel', value: 350 })} isSelected={hotel.option === 'Com Hotel'}>
-                          <Description>Sem Hotel</Description>
+                        <HotelTicket onClick={() => handleHotelOption({ option: true, value: 350 })} isSelected={hotel.option === true}>
+                          <Description>Com Hotel</Description>
                           <Price>{'+ R$ 350'}</Price>
                         </HotelTicket>
                       </ContainerTickets>
