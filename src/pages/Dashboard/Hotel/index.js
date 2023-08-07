@@ -4,6 +4,18 @@ import Typography from '@material-ui/core/Typography';
 import { useEffect, useState } from 'react';
 import api from '../../../services/api';
 
+function RoomsHeadingTitle({ showRooms }) {
+  if (showRooms) {
+    return (
+      <>
+        <RoomsHeadingTitleStyle>Ótima pedida! Agora escolha seu quarto:</RoomsHeadingTitleStyle>
+      </>
+    );
+  } else {
+    return <></>;
+  }
+}
+
 function ProblemMessage({ hotelProblem }) {
   if (hotelProblem.includes('status code 401')) {
     return (
@@ -26,6 +38,7 @@ function ProblemMessage({ hotelProblem }) {
 }
 function HotelChoice({ hotelProblem, hotels }) {
   const [hotelClickedStates, setHotelClickedStates] = useState({});
+  const [showRooms, setShowRooms] = useState(false);
 
   useEffect(() => {
     // Inicialize o objeto de estados vazio
@@ -44,21 +57,14 @@ function HotelChoice({ hotelProblem, hotels }) {
 
     for (const key in hotelClickedStates) {
       if (Number(key) !== Number(hotelId)) {
-        // console.log('hotelClickedStates[Number(hotelId)]', hotelClickedStates[Number(key)]);
-        newObject[Number(key)] = false
-        // console.log('===========', key);
+        newObject[Number(key)] = false;
       } else {
         newObject[Number(key)] = !hotelClickedStates[Number(hotelId)];
-        // console.log('hotelClickedStates[Number(hotelId)]', hotelClickedStates[Number(hotelId)]);
-        // console.log('!!!!!!!!!!!', key);
       }
     }
     setHotelClickedStates(newObject);
-
-    // setHotelClickedStates((hotelClickedStates) => ({
-    //   ...hotelClickedStates,
-    //   [hotelId]: !hotelClickedStates[hotelId],
-    // }));
+    setShowRooms(!!Object.keys(newObject).filter((ch) => newObject[ch] === true).length);
+    console.log(showRooms);
     console.log(newObject);
   };
 
@@ -66,22 +72,25 @@ function HotelChoice({ hotelProblem, hotels }) {
     return (
       <>
         <HotelChoiceContainer>Primeiro, escolha seu hotel</HotelChoiceContainer>
-        <Hotels>
-          {hotels.map((h) => (
-            <HotelInfoContainer
-              clicked={hotelClickedStates[h.id]}
-              onClick={() => handleContainerClick(h.id)}
-              key={h.id}
-            >
-              <HotelImage src={h.image} />
-              <HotelName>{h.name}</HotelName>
-              <HotelSubtitle>Tipos de acomodação:</HotelSubtitle>
-              <HotelInfo>{h.accommodation}</HotelInfo>
-              <HotelSubtitle>Vagas disponíves</HotelSubtitle>
-              <HotelInfo>{h.vacanciesSum}</HotelInfo>
-            </HotelInfoContainer>
-          ))}
-        </Hotels>
+        <HotelsContainer>
+          <Hotels>
+            {hotels.map((h) => (
+              <HotelInfoContainer
+                clicked={hotelClickedStates[h.id]}
+                onClick={() => handleContainerClick(h.id)}
+                key={h.id}
+              >
+                <HotelImage src={h.image} />
+                <HotelName>{h.name}</HotelName>
+                <HotelSubtitle>Tipos de acomodação:</HotelSubtitle>
+                <HotelInfo>{h.accommodation}</HotelInfo>
+                <HotelSubtitle>Vagas disponíves</HotelSubtitle>
+                <HotelInfo>{h.vacanciesSum}</HotelInfo>
+              </HotelInfoContainer>
+            ))}
+          </Hotels>
+          <RoomsHeadingTitle showRooms={showRooms} />
+        </HotelsContainer>
       </>
     );
   } else {
@@ -196,7 +205,7 @@ const HotelInfoContainer = styled.div`
   padding: 15px;
 `;
 
-const Hotels = styled.div`
+const HotelsContainer = styled.div`
   position: absolute;
   top: 0px;
   left: 0px;
@@ -226,4 +235,17 @@ const HotelSubtitle = styled.h2`
 const HotelInfo = styled.h3`
   font-size: 12px;
   font-weight: 400;
+`;
+
+const Hotels = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+`;
+
+const RoomsHeadingTitleStyle = styled.p`
+  color: #8e8e8e;
+  font-size: 20px;
+  font-weight: 400;
+  margin-top: 50px;
+  margin-bottom: 30px;
 `;
