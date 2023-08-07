@@ -4,7 +4,12 @@ import Typography from '@material-ui/core/Typography';
 import { useEffect, useState } from 'react';
 import api from '../../../services/api';
 
-function RoomsHeadingTitle({ showRooms }) {
+function RoomsHeadingTitle({ showRooms, hotelClickedStates }) {
+  // console.log('hotelClickedStates', hotelClickedStates);
+  // console.log(Object.keys(hotelClickedStates).find((hotelId) => hotelClickedStates[hotelId] === true));
+  // console.log('showRooms', showRooms);
+  const hotelId = Object.keys(hotelClickedStates).find((hotelId) => hotelClickedStates[hotelId] === true);
+  console.log('hotelId', hotelId);
   if (showRooms) {
     return (
       <>
@@ -47,13 +52,13 @@ function HotelChoice({ hotelProblem, hotels }) {
       initialClickedStates[hotel.id] = false;
     });
     setHotelClickedStates(initialClickedStates);
-    console.log('initialClickedStates', initialClickedStates);
+    // console.log('initialClickedStates', initialClickedStates);
   }, [hotels]);
 
   const handleContainerClick = (hotelId) => {
     const newObject = {};
-    console.log(hotelId);
-    console.log('hotelClickedStates', hotelClickedStates);
+    // console.log(hotelId);
+    // console.log('hotelClickedStates', hotelClickedStates);
 
     for (const key in hotelClickedStates) {
       if (Number(key) !== Number(hotelId)) {
@@ -64,8 +69,8 @@ function HotelChoice({ hotelProblem, hotels }) {
     }
     setHotelClickedStates(newObject);
     setShowRooms(!!Object.keys(newObject).filter((ch) => newObject[ch] === true).length);
-    console.log(showRooms);
-    console.log(newObject);
+    // console.log(showRooms);
+    // console.log(newObject);
   };
 
   if (hotelProblem === 'NoError') {
@@ -89,7 +94,7 @@ function HotelChoice({ hotelProblem, hotels }) {
               </HotelInfoContainer>
             ))}
           </Hotels>
-          <RoomsHeadingTitle showRooms={showRooms} />
+          <RoomsHeadingTitle showRooms={showRooms} hotelClickedStates={hotelClickedStates} />
         </HotelsContainer>
       </>
     );
@@ -115,9 +120,9 @@ export default function Hotel() {
 
       setAccommodation(response.data.accommodation);
       setVacancies(response.data.vacancies);
-      console.log('response.data.hotels', response.data.hotels);
-      console.log('response.data.accommodation', response.data.accommodation);
-      console.log('response.data.vacancies', response.data.vacancies);
+      // console.log('response.data.hotels', response.data.hotels);
+      // console.log('response.data.accommodation', response.data.accommodation);
+      // console.log('response.data.vacancies', response.data.vacancies);
       return setHotels(response.data.hotels);
     } catch (error) {
       return setHotelProblemKind(error.message);
