@@ -111,7 +111,7 @@ function ProblemMessage({ hotelProblem }) {
       </>
     );
   }
-  if (hotelProblem.includes('status code 402')) {
+  if (hotelProblem.includes('status code 402') || hotelProblem.includes('status code 400')) {
     return (
       <>
         <ProblemText>Você precisa ter confirmado pagamento antes de fazer a escolha de hospedagem</ProblemText>
@@ -218,8 +218,10 @@ export default function Hotel() {
       // console.log('response.data.hotels', response.data.hotels);
       // console.log('response.data.accommodation', response.data.accommodation);
       // console.log('response.data.vacancies', response.data.vacancies);
+      setHotelProblemKind('NoError');
       return setHotels(response.data.hotels);
     } catch (error) {
+      // console.log(error.message);
       return setHotelProblemKind(error.message);
     }
   }
@@ -228,8 +230,7 @@ export default function Hotel() {
     try {
       const response = await api.get('/tickets/types', {
         headers: {
-          Authorization:
-            'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsImlhdCI6MTY5MDk1MTkzN30.1iNeNt7l-K4qAtWJ1VvfGdZMFR2kZeMFjXRe7c0erxs',
+          Authorization: `Bearer ${userData.token}`,
         },
       });
       if (response.data[0].isRemote === true) {
