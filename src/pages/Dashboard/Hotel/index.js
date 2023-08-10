@@ -252,7 +252,7 @@ export default function Hotel() {
       const desiredTicketType = response.data.find((key) => key.id === userTicket.ticketTypeId);
       // console.log('desiredTicketType', desiredTicketType);
       // console.log(desiredTicketType.isRemote, 'desiredTicketType.isRemote');
-      if (desiredTicketType.isRemote === true) {
+      if (desiredTicketType.isRemote === true || desiredTicketType.includesHotel === false) {
         return setHotelProblemKind('online');
       }
       return setTicketType(response.data);
