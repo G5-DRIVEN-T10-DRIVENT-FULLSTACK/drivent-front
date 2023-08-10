@@ -6,6 +6,7 @@ import api from '../../../services/api';
 import { BsPerson, BsPersonFill } from 'react-icons/bs';
 import UserContext from '../../../contexts/UserContext';
 import { useContext } from 'react';
+import * as ticketApi from '../../../services/ticketApi';
 
 function RoomsHeadingTitle({ showRooms, hotelClickedStates, vacancies }) {
   // console.log('hotelClickedStates', hotelClickedStates);
@@ -102,7 +103,7 @@ function RoomsHeadingTitle({ showRooms, hotelClickedStates, vacancies }) {
 }
 
 function ProblemMessage({ hotelProblem }) {
-  if (hotelProblem.includes('status code 401')) {
+  if (hotelProblem.includes('status code 401') || hotelProblem.includes('online')) {
     return (
       <>
         <ProblemText>
@@ -111,7 +112,7 @@ function ProblemMessage({ hotelProblem }) {
       </>
     );
   }
-  if (hotelProblem.includes('status code 402')) {
+  if (hotelProblem.includes('status code 402') || hotelProblem.includes('status code 400')) {
     return (
       <>
         <ProblemText>Você precisa ter confirmado pagamento antes de fazer a escolha de hospedagem</ProblemText>
@@ -190,7 +191,20 @@ export default function Hotel() {
   const [hotels, setHotels] = useState([]);
   const [accommodations, setAccommodation] = useState({});
   const [vacancies, setVacancies] = useState([]);
-  const [ticketType, setTicketType] = useState('');
+  const [ticketType, setTicketType] = useState(null);
+  const [userTicket, setUserTicket] = useState(null);
+
+  async function getUserTicket() {
+    try {
+      const data = await ticketApi.getTicketByUser(userData.token);
+      setUserTicket(data);
+      // console.log(data);
+      return data;
+    } catch (err) {
+      console.log(err.message);
+    }
+  }
+
   async function getHotels() {
     try {
       const response = await api.get('/hotels/superGet', {
@@ -218,22 +232,28 @@ export default function Hotel() {
       // console.log('response.data.hotels', response.data.hotels);
       // console.log('response.data.accommodation', response.data.accommodation);
       // console.log('response.data.vacancies', response.data.vacancies);
+      setHotelProblemKind('NoError');
       return setHotels(response.data.hotels);
     } catch (error) {
+      // console.log(error.message);
       return setHotelProblemKind(error.message);
     }
   }
 
-  async function isRemoteFunc() {
+  async function isRemoteFunc(userTicket) {
     try {
       const response = await api.get('/tickets/types', {
         headers: {
-          Authorization:
-            'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsImlhdCI6MTY5MDk1MTkzN30.1iNeNt7l-K4qAtWJ1VvfGdZMFR2kZeMFjXRe7c0erxs',
+          Authorization: `Bearer ${userData.token}`,
         },
       });
-      if (response.data[0].isRemote === true) {
-        return setHotelProblemKind('status code 402');
+      // console.log(userTicket.ticketTypeId, 'userTicket.ticketTypeId');
+      // console.log('response.data', response.data);
+      const desiredTicketType = response.data.find((key) => key.id === userTicket.ticketTypeId);
+      // console.log('desiredTicketType', desiredTicketType);
+      // console.log(desiredTicketType.isRemote, 'desiredTicketType.isRemote');
+      if (desiredTicketType.isRemote === true || desiredTicketType.includesHotel === false) {
+        return setHotelProblemKind('online');
       }
       return setTicketType(response.data);
     } catch (error) {
@@ -243,8 +263,17 @@ export default function Hotel() {
   }
 
   useEffect(() => {
-    getHotels();
-    isRemoteFunc();
+    const fetchData = async () => {
+      try {
+        await getHotels();
+        const userTicket = await getUserTicket();
+        // console.log('userTicket', userTicket);
+        await isRemoteFunc(userTicket);
+      } catch (error) {
+        console.error('Error:', error);
+      }
+    };
+    fetchData();
   }, []);
 
   return (
