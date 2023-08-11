@@ -35,7 +35,7 @@ function RoomsHeadingTitle({ showRooms, hotelClickedStates, vacancies }) {
         <RoomChoice>
           <RoomsHeadingTitleStyle>Ótima pedida! Agora escolha seu quarto:</RoomsHeadingTitleStyle>
           <AllRoomsContainer>
-            {hotelRoomsInfo.map((hri) => {
+            {hotelRoomsInfo.map((hri, index) => {
               const personIcons = [];
               for (let i = 0; i < hri.totalCapacity; i++) {
                 personIcons.push(
@@ -53,7 +53,7 @@ function RoomsHeadingTitle({ showRooms, hotelClickedStates, vacancies }) {
               return (
                 <RoomContainer key={hri.id} fullRoom={hri.totalCapacity - hri.availableCapacity}>
                   <RoomInfo>
-                    <RoomId fullRoom={hri.totalCapacity - hri.availableCapacity}>{hri.id}</RoomId>
+                    <RoomId fullRoom={hri.totalCapacity - hri.availableCapacity}>{index + 1}</RoomId>
                     <RoomIcons>{personIcons}</RoomIcons>
                   </RoomInfo>
                 </RoomContainer>
