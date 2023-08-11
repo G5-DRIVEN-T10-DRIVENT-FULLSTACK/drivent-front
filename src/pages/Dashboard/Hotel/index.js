@@ -38,22 +38,47 @@ function RoomsHeadingTitle({ showRooms, hotelClickedStates, vacancies }) {
             {hotelRoomsInfo.map((hri, index) => {
               const personIcons = [];
               for (let i = 0; i < hri.totalCapacity; i++) {
-                personIcons.push(
-                  choisenRoom ? (
-                    <BsPersonFill
-                      key={i}
-                      size={30}
-                      color={hri.totalCapacity - hri.availableCapacity ? '#8C8C8C' : '#000000'}
-                    />
-                  ) : (
-                    <BsPerson key={i} size={30} />
-                  )
-                );
+                if (hri.totalCapacity === hri.availableCapacity) {
+                  personIcons.push(<BsPerson key={i} size={30} />);
+                } else {
+                  if (hri.availableCapacity - i) {
+                    personIcons.push(<BsPerson key={i} size={30} />);
+                  } else {
+                    personIcons.push(
+                      <BsPersonFill
+                        key={i}
+                        size={30}
+                        color={!hri.availableCapacity ? '#8C8C8C' : '#000000'}
+                      />
+                    );
+                  }
+                  ///i = 0 1 2
+                  ///cap = 3; av = 3;
+                  ///av - i = 3 2 1
+                  ///cap = 3; av = 2;
+                  ///av - i = 2 1 0
+                  ///cap = 3; av = 1;
+                  ///av - i = 1 0 -1
+                  ///cap = 3; av = 0;
+                  ///av - i = 0 -1 -2
+                  ///
+                  // personIcons.push(
+                  //   choisenRoom ? (
+                  //     <BsPersonFill
+                  //       key={i}
+                  //       size={30}
+                  //       color={hri.totalCapacity - hri.availableCapacity ? '#8C8C8C' : '#000000'}
+                  //     />
+                  //   ) : (
+                  //     <BsPerson key={i} size={30} />
+                  //   )
+                  // );
+                }
               }
               return (
-                <RoomContainer key={hri.id} fullRoom={hri.totalCapacity - hri.availableCapacity}>
+                <RoomContainer key={hri.id} fullRoom={!hri.availableCapacity}>
                   <RoomInfo>
-                    <RoomId fullRoom={hri.totalCapacity - hri.availableCapacity}>{index + 1}</RoomId>
+                    <RoomId fullRoom={!hri.availableCapacity}>{index + 1}</RoomId>
                     <RoomIcons>{personIcons}</RoomIcons>
                   </RoomInfo>
                 </RoomContainer>
