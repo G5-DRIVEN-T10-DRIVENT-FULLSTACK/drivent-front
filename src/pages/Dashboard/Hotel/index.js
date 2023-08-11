@@ -16,40 +16,51 @@ function RoomsHeadingTitle({ showRooms, hotelClickedStates, vacancies }) {
   if (showRooms) {
     const hotelId = Object.keys(hotelClickedStates).find((hotelId) => hotelClickedStates[hotelId] === true);
     // console.log('hotelId', hotelId);
+    let hotelRoomsInfo = [];
     console.log('vacancies', vacancies);
     console.log('vacancies.capacity', vacancies.capacity);
     const hotelsIdArrays = vacancies.hotelIdArray;
     // console.log('hotelsIdArrays', hotelsIdArrays);
     // console.log('hotelId', hotelId);
     const roomsKeys = Object.keys(hotelsIdArrays).filter((key) => Number(hotelsIdArrays[key]) === Number(hotelId));
-    console.log('roomsKeys', roomsKeys);
+    // const testArray = roomsKeys;
+    hotelRoomsInfo = roomsKeys.map((ta, index) => {
+      return { id: ta, totalCapacity: vacancies.capacity[ta], availableCapacity: vacancies.hotelVacanciesArray[ta] };
+    });
+    console.log('hotelRoomsInfo', hotelRoomsInfo);
+    // console.log('testArray', testArray);
     const choisenRoom = true;
-    const fullRoom = true;
-
-    function renderIcon(cap) {
-      for (let i = 0; i < cap; i++) {
-        return (
-          <>
-            <BsPerson size={30} />
-          </>
-        );
-      }
-    }
-
     return (
       <>
         <RoomChoice>
           <RoomsHeadingTitleStyle>Ótima pedida! Agora escolha seu quarto:</RoomsHeadingTitleStyle>
           <AllRoomsContainer>
-            {/* {roomsKeys.map((roomId) => (
-              <RoomContainer key={roomId}>
-                <RoomInfo>
-                  <RoomId fullRoom={fullRoom}>{roomId}</RoomId>
-                  <RoomIcons>{renderIcon(vacancies.capacity[roomId])}</RoomIcons>
-                </RoomInfo>
-              </RoomContainer>
-            ))} */}
-            <RoomContainer fullRoom={true}>
+            {hotelRoomsInfo.map((hri) => {
+              const personIcons = [];
+              for (let i = 0; i < hri.totalCapacity; i++) {
+                personIcons.push(
+                  choisenRoom ? (
+                    <BsPersonFill
+                      key={i}
+                      size={30}
+                      color={hri.totalCapacity - hri.availableCapacity ? '#8C8C8C' : '#000000'}
+                    />
+                  ) : (
+                    <BsPerson key={i} size={30} />
+                  )
+                );
+              }
+              return (
+                <RoomContainer key={hri.id} fullRoom={hri.totalCapacity - hri.availableCapacity}>
+                  <RoomInfo>
+                    <RoomId fullRoom={hri.totalCapacity - hri.availableCapacity}>{hri.id}</RoomId>
+                    <RoomIcons>{personIcons}</RoomIcons>
+                  </RoomInfo>
+                </RoomContainer>
+              );
+            })}
+
+            {/* <RoomContainer fullRoom={true}>
               <RoomInfo>
                 <RoomId fullRoom={fullRoom}>101</RoomId>
                 <RoomIcons>
@@ -92,7 +103,7 @@ function RoomsHeadingTitle({ showRooms, hotelClickedStates, vacancies }) {
                   )}
                 </RoomIcons>
               </RoomInfo>
-            </RoomContainer>
+            </RoomContainer> */}
           </AllRoomsContainer>
         </RoomChoice>
       </>
@@ -155,7 +166,7 @@ function HotelChoice({ hotelProblem, hotels, vacancies }) {
   };
 
   if (hotelProblem === 'NoError') {
-    console.log(hotels);
+    console.log('hotels', hotels);
     return (
       <>
         <HotelChoiceContainer>Primeiro, escolha seu hotel</HotelChoiceContainer>
@@ -387,7 +398,6 @@ const RoomContainer = styled.div`
   border-radius: 5px;
   margin-right: 15px;
   margin-bottom: 5px;
-  /* color: ${(props) => (props.fullRoom ? '#e9e9e9' : '#454545')}; */
   ${(props) => (props.fullRoom ? 'background-color: #e9e9e9;' : '')}
 `;
 
