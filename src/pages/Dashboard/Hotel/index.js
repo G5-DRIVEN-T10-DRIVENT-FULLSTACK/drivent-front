@@ -129,20 +129,24 @@ async function choiceRoomFunction(roomIdToBack, userData) {
 function HotelOrderInfo({ isBooking }) {
   // console.log('roomIdToBack', roomIdToBack);
   if (isBooking !== false && isBooking !== null) {
+    console.log('isBooking', isBooking);
     return (
       <>
         <HotelOrderInfoContainer>
           <RoomsHeadingTitleStyle>Você já escolheu seu quarto:</RoomsHeadingTitleStyle>
           <HotelInfoContainer clicked={true}>
-            <HotelImage src={isBooking.image} />
-            <HotelName>{isBooking.name}</HotelName>
+            <HotelImage src={isBooking.Room.hotelImage} />
+            <HotelName>{isBooking.Room.hotelName}</HotelName>
             <HotelSubtitle>Quarto reservado:</HotelSubtitle>
             <HotelInfo>
-              {isBooking.id} ({isBooking.stringCapacity})
+              {isBooking.Room.id} ({isBooking.Room.stringCapacity})
             </HotelInfo>
             <HotelSubtitle>Pessoas no seu quarto</HotelSubtitle>
-            <HotelInfo>{isBooking.availableCap}</HotelInfo>
+            <HotelInfo>{isBooking.Room.availableCap}</HotelInfo>
           </HotelInfoContainer>
+          <SubmitContainer>
+            <Button>TROCAR DE QUARTO</Button>
+          </SubmitContainer>
         </HotelOrderInfoContainer>
       </>
     );
