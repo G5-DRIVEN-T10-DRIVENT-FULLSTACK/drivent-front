@@ -9,7 +9,7 @@ import { useContext } from 'react';
 import * as ticketApi from '../../../services/ticketApi';
 import Button from '../../../components/Form/Button';
 
-function choiceRoomFunction(hotelId, roomId, setRoomIdToBack, capacity) {
+function selectRoomFunction(hotelId, roomId, setRoomIdToBack, capacity) {
   console.log('hotelId', hotelId);
   console.log('roomId', roomId);
   console.log('capacity', capacity);
@@ -17,13 +17,16 @@ function choiceRoomFunction(hotelId, roomId, setRoomIdToBack, capacity) {
   setRoomIdToBack({ roomId: sendableRoomId });
 }
 
-function RoomsHeadingTitle({ showRooms, hotelClickedStates, vacancies }) {
+export function RoomsHeadingTitle({ showRooms, hotelClickedStates, vacancies, rooms }) {
   // console.log('hotelClickedStates', hotelClickedStates);
   // console.log(Object.keys(hotelClickedStates).find((hotelId) => hotelClickedStates[hotelId] === true));
   // console.log('showRooms', showRooms);
+  const { userData } = useContext(UserContext);
+  console.log(userData);
   const [roomIdToBack, setRoomIdToBack] = useState({});
 
   if (showRooms) {
+    console.log('hotelClickedStates', hotelClickedStates);
     const hotelId = Object.keys(hotelClickedStates).find((hotelId) => hotelClickedStates[hotelId] === true);
     // console.log('hotelId', hotelId);
     let hotelRoomsInfo = [];
@@ -33,16 +36,17 @@ function RoomsHeadingTitle({ showRooms, hotelClickedStates, vacancies }) {
     // console.log('hotelsIdArrays', hotelsIdArrays);
     // console.log('hotelId', hotelId);
     const roomsKeys = Object.keys(hotelsIdArrays).filter((key) => Number(hotelsIdArrays[key]) === Number(hotelId));
-    // const testArray = roomsKeys;
+    console.log('roomsKeys', roomsKeys);
     hotelRoomsInfo = roomsKeys.map((ta, index) => {
       // console.log(roomIdToBack === ta);
-      // console.log('roomIdToBack', roomIdToBack);
+      console.log('roomIdToBack', roomIdToBack);
       // console.log('ta', ta);
+      console.log('accommodations'), rooms;
       return {
-        id: ta,
+        id: rooms[ta].id,
         totalCapacity: vacancies.capacity[ta],
         availableCapacity: vacancies.hotelVacanciesArray[ta],
-        choisen: roomIdToBack.roomId === ta ? true : false,
+        choisen: roomIdToBack.roomId === rooms[ta].id ? true : false,
       };
     });
     console.log('hotelRoomsInfo', hotelRoomsInfo);
@@ -81,8 +85,8 @@ function RoomsHeadingTitle({ showRooms, hotelClickedStates, vacancies }) {
               }
               return (
                 <RoomContainer
-                  onClick={() => choiceRoomFunction(hotelId, hri.id, setRoomIdToBack, hri.availableCapacity)}
-                  key={hri.id}
+                  onClick={() => selectRoomFunction(hotelId, hri.id, setRoomIdToBack, hri.availableCapacity)}
+                  key={index}
                   fullRoom={!hri.availableCapacity}
                   chosen={hri.choisen}
                 >
@@ -95,13 +99,29 @@ function RoomsHeadingTitle({ showRooms, hotelClickedStates, vacancies }) {
             })}
           </AllRoomsContainer>
           <SubmitContainer>
-            <Button>RESERVAR QUARTO</Button>
+            <Button onClick={async () => await choiceRoomFunction(roomIdToBack, userData)}>RESERVAR QUARTO</Button>
           </SubmitContainer>
         </RoomChoice>
       </>
     );
   } else {
     return <></>;
+  }
+}
+
+async function choiceRoomFunction(roomIdToBack, userData) {
+  const body = { roomId: Number(roomIdToBack.roomId) };
+
+  try {
+    const response = await api.post('/booking', body, {
+      headers: {
+        Authorization: `Bearer ${userData.token}`,
+      },
+    });
+
+    console.log('response, booking', response);
+  } catch (e) {
+    return console.log(e.message);
   }
 }
 
@@ -125,7 +145,7 @@ function ProblemMessage({ hotelProblem }) {
     return <></>;
   }
 }
-function HotelChoice({ hotelProblem, hotels, vacancies }) {
+function HotelChoice({ hotelProblem, hotels, vacancies, rooms }) {
   const [hotelClickedStates, setHotelClickedStates] = useState({});
   const [showRooms, setShowRooms] = useState(false);
 
@@ -157,14 +177,23 @@ function HotelChoice({ hotelProblem, hotels, vacancies }) {
     // console.log(newObject);
   };
 
-  if (hotelProblem === 'NoError') {
+  if (hotelProblem === 'NoError' && hotels.length !== 0) {
     console.log('hotels', hotels);
+    const allHotelCap = [];
+    allHotelCap?.push(Number(hotels[0].vacanciesSum));
+    console.log('allHotelCap', allHotelCap);
+    let sub = 0;
+    for (let i = 1; i < hotels.length; i++) {
+      sub += allHotelCap[i - 1];
+      allHotelCap.push(Number(hotels[i].vacanciesSum) - sub);
+    }
+    console.log('allHotelCap', allHotelCap);
     return (
       <>
         <HotelChoiceContainer>Primeiro, escolha seu hotel</HotelChoiceContainer>
         <HotelsContainer>
           <Hotels>
-            {hotels.map((h) => (
+            {hotels.map((h, index) => (
               <HotelInfoContainer
                 clicked={hotelClickedStates[h.id]}
                 onClick={() => handleContainerClick(h.id)}
@@ -175,11 +204,16 @@ function HotelChoice({ hotelProblem, hotels, vacancies }) {
                 <HotelSubtitle>Tipos de acomodação:</HotelSubtitle>
                 <HotelInfo>{h.accommodation}</HotelInfo>
                 <HotelSubtitle>Vagas disponíves</HotelSubtitle>
-                <HotelInfo>{h.vacanciesSum}</HotelInfo>
+                <HotelInfo>{allHotelCap[index]}</HotelInfo>
               </HotelInfoContainer>
             ))}
           </Hotels>
-          <RoomsHeadingTitle showRooms={showRooms} hotelClickedStates={hotelClickedStates} vacancies={vacancies} />
+          <RoomsHeadingTitle
+            showRooms={showRooms}
+            hotelClickedStates={hotelClickedStates}
+            vacancies={vacancies}
+            rooms={rooms}
+          />
         </HotelsContainer>
       </>
     );
@@ -193,6 +227,7 @@ export default function Hotel() {
   const [hotelProblemKind, setHotelProblemKind] = useState('NoError');
   const [hotels, setHotels] = useState([]);
   const [accommodations, setAccommodation] = useState({});
+  const [rooms, setRooms] = useState([]);
   const [vacancies, setVacancies] = useState([]);
   const [ticketType, setTicketType] = useState(null);
   const [userTicket, setUserTicket] = useState(null);
@@ -226,9 +261,9 @@ export default function Hotel() {
         return acc;
       }, []);
       vacanciesObject.capacity = capacityArray;
-      // console.log(vacanciesObject);
+      console.log('response.data', response.data);
 
-      setAccommodation(response.data.accommodation);
+      setRooms(response.data.rooms);
       setVacancies(vacanciesObject);
 
       // console.log('response.data.hotels', response.data.hotels);
@@ -284,7 +319,7 @@ export default function Hotel() {
       <StyledTypography variant="h4">Escolha de hotel e quarto</StyledTypography>
       <HotelContent>
         <ProblemMessage hotelProblem={hotelProblemKind} />
-        <HotelChoice hotels={hotels} hotelProblem={hotelProblemKind} vacancies={vacancies} />
+        <HotelChoice hotels={hotels} hotelProblem={hotelProblemKind} vacancies={vacancies} rooms={rooms} />
       </HotelContent>
     </>
   );
