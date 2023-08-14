@@ -39,9 +39,9 @@ export function RoomsHeadingTitle({ showRooms, hotelClickedStates, vacancies, ro
     console.log('roomsKeys', roomsKeys);
     hotelRoomsInfo = roomsKeys.map((ta, index) => {
       // console.log(roomIdToBack === ta);
-      console.log('roomIdToBack', roomIdToBack);
+      // console.log('roomIdToBack', roomIdToBack);
       // console.log('ta', ta);
-      console.log('accommodations'), rooms;
+      // console.log('accommodations'), rooms;
       return {
         id: rooms[ta].id,
         totalCapacity: vacancies.capacity[ta],
@@ -125,6 +125,8 @@ async function choiceRoomFunction(roomIdToBack, userData) {
   }
 }
 
+function HotelOrderInfo({}) {}
+
 function ProblemMessage({ hotelProblem }) {
   if (hotelProblem.includes('status code 401') || hotelProblem.includes('online')) {
     return (
@@ -145,7 +147,7 @@ function ProblemMessage({ hotelProblem }) {
     return <></>;
   }
 }
-function HotelChoice({ hotelProblem, hotels, vacancies, rooms }) {
+function HotelChoice({ hotelProblem, hotels, vacancies, rooms, isBooking }) {
   const [hotelClickedStates, setHotelClickedStates] = useState({});
   const [showRooms, setShowRooms] = useState(false);
 
@@ -176,8 +178,9 @@ function HotelChoice({ hotelProblem, hotels, vacancies, rooms }) {
     // console.log(showRooms);
     // console.log(newObject);
   };
-
-  if (hotelProblem === 'NoError' && hotels.length !== 0) {
+  // console.log('isBooking', isBooking);
+  // if (hotelProblem === 'NoError' && hotels.length !== 0) {
+  if (hotelProblem === 'NoError' && hotels.length !== 0 && isBooking === null) {
     console.log('hotels', hotels);
     const allHotelCap = [];
     allHotelCap?.push(Number(hotels[0].vacanciesSum));
@@ -231,6 +234,7 @@ export default function Hotel() {
   const [vacancies, setVacancies] = useState([]);
   const [ticketType, setTicketType] = useState(null);
   const [userTicket, setUserTicket] = useState(null);
+  const [isBooking, setIsBooking] = useState(null);
 
   async function getUserTicket() {
     try {
@@ -278,6 +282,25 @@ export default function Hotel() {
     }
   }
 
+  async function isBookingFunc() {
+    try {
+      const response = await api.get('/booking', {
+        headers: {
+          Authorization: `Bearer ${userData.token}`,
+        },
+      });
+      setIsBooking(response.data);
+      return response.data;
+    } catch (error) {
+      /* eslint-disable-next-line no-console */
+      if (error.message.includes('404')) {
+        setIsBooking(false);
+      }
+      console.log("error.message.includes('404')", error.message.includes('404'));
+      console.log(error.message);
+    }
+  }
+
   async function isRemoteFunc(userTicket) {
     try {
       const response = await api.get('/tickets/types', {
@@ -307,6 +330,7 @@ export default function Hotel() {
         const userTicket = await getUserTicket();
         // console.log('userTicket', userTicket);
         await isRemoteFunc(userTicket);
+        await isBookingFunc();
       } catch (error) {
         console.error('Error:', error);
       }
@@ -319,7 +343,14 @@ export default function Hotel() {
       <StyledTypography variant="h4">Escolha de hotel e quarto</StyledTypography>
       <HotelContent>
         <ProblemMessage hotelProblem={hotelProblemKind} />
-        <HotelChoice hotels={hotels} hotelProblem={hotelProblemKind} vacancies={vacancies} rooms={rooms} />
+        <HotelChoice
+          hotels={hotels}
+          hotelProblem={hotelProblemKind}
+          vacancies={vacancies}
+          rooms={rooms}
+          isBooking={isBooking}
+        />
+        {/* <HotelOrderInfo hotelProblem={hotelProblemKind} /> */}
       </HotelContent>
     </>
   );
