@@ -17,6 +17,7 @@ import PrincipalAuditory from './PrincipalAuditory';
 
 export default function Activities() {
   const [selectedDate, setSelectedDate] = useState(null);
+  const [dateToActivity, setDateToActivity] = useState(null);
   const [isRemote, setIsRemote] = useState(false);
   const [isPaid, setIsPaid] = useState(false);
   const [startDate, setStartDate] = useState('');
@@ -49,8 +50,9 @@ export default function Activities() {
   }
 
   const handleSelect = (date) => {
+    setDateToActivity(date.originalDate);
     setSelectedDate(date.formattedDate);
-    getActivity(date.originalDate, token);
+    getActivity(date.originalDate);
   };
 
   function ProblemMessage() {
@@ -127,7 +129,16 @@ export default function Activities() {
             <h2>Auditório Principal</h2>
             <TasksWrapper>
               {activitiesList.map(
-                (item) => item.activityPlaceId === 1 && <PrincipalAuditory item={item} getCap={getCap} key={item.id} />
+                (item) =>
+                  item.activityPlaceId === 1 && (
+                    <PrincipalAuditory
+                      getActivity={getActivity}
+                      selectedDate={dateToActivity}
+                      item={item}
+                      getCap={getCap}
+                      key={item.id}
+                    />
+                  )
               )}
             </TasksWrapper>
           </Place>
@@ -136,7 +147,16 @@ export default function Activities() {
             <h2>Auditório Lateral</h2>
             <TasksWrapper>
               {activitiesList.map(
-                (item) => item.activityPlaceId === 2 && <PrincipalAuditory item={item} getCap={getCap} key={item.id} />
+                (item) =>
+                  item.activityPlaceId === 2 && (
+                    <PrincipalAuditory
+                      getActivity={getActivity}
+                      selectedDate={dateToActivity}
+                      item={item}
+                      getCap={getCap}
+                      key={item.id}
+                    />
+                  )
               )}
             </TasksWrapper>
           </Place>
@@ -145,7 +165,16 @@ export default function Activities() {
             <h2>Sala de Workshop</h2>
             <TasksWrapper>
               {activitiesList.map(
-                (item) => item.activityPlaceId === 3 && <PrincipalAuditory item={item} getCap={getCap} key={item.id} />
+                (item) =>
+                  item.activityPlaceId === 3 && (
+                    <PrincipalAuditory
+                      getActivity={getActivity}
+                      selectedDate={dateToActivity}
+                      item={item}
+                      getCap={getCap}
+                      key={item.id}
+                    />
+                  )
               )}
             </TasksWrapper>
           </Place>

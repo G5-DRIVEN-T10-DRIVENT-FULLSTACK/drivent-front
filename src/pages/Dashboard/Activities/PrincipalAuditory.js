@@ -3,10 +3,14 @@ import { useEffect, useState } from 'react';
 import dayjs from 'dayjs';
 import styled from 'styled-components';
 import { RiLoginBoxLine, RiCloseCircleLine } from 'react-icons/ri';
+import useToken from '../../../hooks/useToken';
+import * as activityApi from '../../../services/activityApi';
+import { toast } from 'react-toastify';
 
-export default function PrincipalAuditory({ item, getCap }) {
+export default function PrincipalAuditory({ item, getCap, getActivity, selectedDate }) {
   const [duration, setDuration] = useState();
-  const [cap, setCap] = useState(0);
+  const [isFull, setIsFull] = useState(false);
+  const token = useToken();
 
   function getDuration(start, end) {
     const formatedStart = dayjs(start).format('HH:mm');
@@ -18,11 +22,21 @@ export default function PrincipalAuditory({ item, getCap }) {
     return endTimeObj.diff(startTimeObj, 'hour');
   }
 
+  async function postActivity() {
+    try {
+      await activityApi.postActivity(item.id, token);
+      getActivity(selectedDate);
+      toast('Ok');
+    } catch (err) {
+      toast(err.message);
+    }
+  }
+
   useEffect(async () => {
     const itemDuration = getDuration(item.startTime, item.endTime);
     setDuration(itemDuration);
     const returnedCap = await getCap(item.id);
-    setCap(returnedCap);
+    setIsFull(returnedCap > item.capacity || item.capacity === 0);
   }, []);
 
   return (
@@ -34,8 +48,8 @@ export default function PrincipalAuditory({ item, getCap }) {
           {dayjs(item.startTime).format('HH:mm')} - {dayjs(item.endTime).format('HH:mm')}
         </p>
       </ActivityInfo>
-      <ActivitySvg color={cap < item.capacity ? '#078632' : 'red'}>
-        {cap < item.capacity ? (
+      <ActivitySvg color={!isFull ? '#078632' : 'red'} onClick={isFull ? undefined : postActivity}>
+        {!isFull ? (
           <>
             <RiLoginBoxLine />
             <p>{item.capacity} vagas</p>
