@@ -18,7 +18,15 @@ function selectRoomFunction(hotelId, roomId, setRoomIdToBack, capacity) {
   setRoomIdToBack({ roomId: sendableRoomId });
 }
 
-export function RoomsHeadingTitle({ showRooms, hotelClickedStates, vacancies, rooms, roomIdToBack, setRoomIdToBack }) {
+export function RoomsHeadingTitle({
+  showRooms,
+  hotelClickedStates,
+  vacancies,
+  rooms,
+  roomIdToBack,
+  setRoomIdToBack,
+  changeRoom,
+}) {
   // console.log('hotelClickedStates', hotelClickedStates);
   // console.log(Object.keys(hotelClickedStates).find((hotelId) => hotelClickedStates[hotelId] === true));
   // console.log('showRooms', showRooms);
@@ -100,7 +108,9 @@ export function RoomsHeadingTitle({ showRooms, hotelClickedStates, vacancies, ro
             })}
           </AllRoomsContainer>
           <SubmitContainer>
-            <Button onClick={async () => await choiceRoomFunction(roomIdToBack, userData)}>RESERVAR QUARTO</Button>
+            <Button onClick={async () => await choiceRoomFunction(roomIdToBack, userData, changeRoom)}>
+              RESERVAR QUARTO
+            </Button>
           </SubmitContainer>
         </RoomChoice>
       </>
@@ -110,10 +120,19 @@ export function RoomsHeadingTitle({ showRooms, hotelClickedStates, vacancies, ro
   }
 }
 
-async function choiceRoomFunction(roomIdToBack, userData) {
+async function choiceRoomFunction(roomIdToBack, userData, changeRoom) {
   const body = { roomId: Number(roomIdToBack.roomId) };
+  //mando no body o novo
 
   try {
+    if (changeRoom) {
+      const response = await api.put(`/booking/${Number(roomIdToBack.roomId)}`, body,  {
+        headers: {
+          Authorization: `Bearer ${userData.token}`,
+        },
+      });
+      return window.location.reload();
+    }
     const response = await api.post('/booking', body, {
       headers: {
         Authorization: `Bearer ${userData.token}`,
@@ -126,9 +145,16 @@ async function choiceRoomFunction(roomIdToBack, userData) {
   }
 }
 
-function HotelOrderInfo({ isBooking }) {
+function changeRoomFunc(setChangeRoom) {
+  setChangeRoom(true);
+}
+
+function HotelOrderInfo({ isBooking, changeRoom, setChangeRoom }) {
   // console.log('roomIdToBack', roomIdToBack);
-  if (isBooking !== false && isBooking !== null) {
+  console.log('!!changeRoom', !!changeRoom);
+  // console.log('isBooking ', isBooking);
+  // console.log('isBooking !== false', isBooking !== false);
+  if (!!isBooking && !changeRoom) {
     console.log('isBooking', isBooking);
     return (
       <>
@@ -145,7 +171,7 @@ function HotelOrderInfo({ isBooking }) {
             <HotelInfo>{isBooking.Room.availableCap}</HotelInfo>
           </HotelInfoContainer>
           <SubmitContainer>
-            <Button>TROCAR DE QUARTO</Button>
+            <Button onClick={() => changeRoomFunc(setChangeRoom)}>TROCAR DE QUARTO</Button>
           </SubmitContainer>
         </HotelOrderInfoContainer>
       </>
@@ -173,7 +199,7 @@ function ProblemMessage({ hotelProblem }) {
     return <></>;
   }
 }
-function HotelChoice({ hotelProblem, hotels, vacancies, rooms, isBooking, roomIdToBack, setRoomIdToBack }) {
+function HotelChoice({ hotelProblem, hotels, vacancies, rooms, isBooking, roomIdToBack, setRoomIdToBack, changeRoom }) {
   const [hotelClickedStates, setHotelClickedStates] = useState({});
   const [showRooms, setShowRooms] = useState(false);
   // const [roomIdToBack, setRoomIdToBack] = useState({});
@@ -207,7 +233,7 @@ function HotelChoice({ hotelProblem, hotels, vacancies, rooms, isBooking, roomId
   };
   // console.log('isBooking', isBooking);
   // if (hotelProblem === 'NoError' && hotels.length !== 0) {
-  if (hotelProblem === 'NoError' && hotels.length !== 0 && !isBooking) {
+  if ((hotelProblem === 'NoError' && hotels.length !== 0 && !isBooking) || changeRoom) {
     console.log('hotels', hotels);
     const allHotelCap = [];
     allHotelCap?.push(Number(hotels[0].vacanciesSum));
@@ -245,6 +271,7 @@ function HotelChoice({ hotelProblem, hotels, vacancies, rooms, isBooking, roomId
             rooms={rooms}
             roomIdToBack={roomIdToBack}
             setRoomIdToBack={setRoomIdToBack}
+            changeRoom={changeRoom}
           />
         </HotelsContainer>
       </>
@@ -265,6 +292,7 @@ export default function Hotel() {
   const [userTicket, setUserTicket] = useState(null);
   const [isBooking, setIsBooking] = useState(null);
   const [roomIdToBack, setRoomIdToBack] = useState({});
+  const [changeRoom, setChangeRoom] = useState(false);
 
   async function getUserTicket() {
     try {
@@ -314,6 +342,7 @@ export default function Hotel() {
   }
 
   async function isBookingFunc(superGetData) {
+    console.log('isBookingFunc');
     try {
       const response = await api.get('/booking', {
         headers: {
@@ -433,8 +462,16 @@ export default function Hotel() {
           isBooking={isBooking}
           roomIdToBack={roomIdToBack}
           setRoomIdToBack={setRoomIdToBack}
+          changeRoom={changeRoom}
+          setChangeRoom={setChangeRoom}
         />
-        <HotelOrderInfo isBooking={isBooking} roomIdToBack={roomIdToBack} />
+        <HotelOrderInfo
+          isBooking={isBooking}
+          changeRoom={changeRoom}
+          setChangeRoom={setChangeRoom}
+          setIsBooking={setIsBooking}
+          roomIdToBack={roomIdToBack}
+        />
       </HotelContent>
     </>
   );
