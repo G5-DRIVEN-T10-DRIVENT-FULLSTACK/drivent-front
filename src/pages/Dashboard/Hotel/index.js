@@ -9,10 +9,18 @@ import { useContext } from 'react';
 import * as ticketApi from '../../../services/ticketApi';
 import Button from '../../../components/Form/Button';
 
+function choiceRoomFunction(hotelId, roomId, setRoomIdToBack) {
+  console.log('hotelId', hotelId);
+  console.log('roomId', roomId);
+  const sendableRoomId = roomId;
+  setRoomIdToBack({ roomId: sendableRoomId });
+}
+
 function RoomsHeadingTitle({ showRooms, hotelClickedStates, vacancies }) {
   // console.log('hotelClickedStates', hotelClickedStates);
   // console.log(Object.keys(hotelClickedStates).find((hotelId) => hotelClickedStates[hotelId] === true));
   // console.log('showRooms', showRooms);
+  const [roomIdToBack, setRoomIdToBack] = useState({});
 
   if (showRooms) {
     const hotelId = Object.keys(hotelClickedStates).find((hotelId) => hotelClickedStates[hotelId] === true);
@@ -26,11 +34,18 @@ function RoomsHeadingTitle({ showRooms, hotelClickedStates, vacancies }) {
     const roomsKeys = Object.keys(hotelsIdArrays).filter((key) => Number(hotelsIdArrays[key]) === Number(hotelId));
     // const testArray = roomsKeys;
     hotelRoomsInfo = roomsKeys.map((ta, index) => {
-      return { id: ta, totalCapacity: vacancies.capacity[ta], availableCapacity: vacancies.hotelVacanciesArray[ta] };
+      console.log(roomIdToBack === ta);
+      console.log('roomIdToBack', roomIdToBack);
+      console.log('ta', ta);
+      return {
+        id: ta,
+        totalCapacity: vacancies.capacity[ta],
+        availableCapacity: vacancies.hotelVacanciesArray[ta],
+        choisen: roomIdToBack.roomId === ta ? true : false,
+      };
     });
     console.log('hotelRoomsInfo', hotelRoomsInfo);
     // console.log('testArray', testArray);
-    const choisenRoom = true;
     return (
       <>
         <RoomChoice>
@@ -49,7 +64,6 @@ function RoomsHeadingTitle({ showRooms, hotelClickedStates, vacancies }) {
                       <BsPersonFill key={i} size={30} color={!hri.availableCapacity ? '#8C8C8C' : '#000000'} />
                     );
                   }
-                  ///i = 0 1 2
                   ///cap = 3; av = 3;
                   ///av - i = 3 2 1
                   ///cap = 3; av = 2;
@@ -73,7 +87,12 @@ function RoomsHeadingTitle({ showRooms, hotelClickedStates, vacancies }) {
                 }
               }
               return (
-                <RoomContainer key={hri.id} fullRoom={!hri.availableCapacity}>
+                <RoomContainer
+                  onClick={() => choiceRoomFunction(hotelId, hri.id, setRoomIdToBack)}
+                  key={hri.id}
+                  fullRoom={!hri.availableCapacity}
+                  chosen={hri.choisen}
+                >
                   <RoomInfo>
                     <RoomId fullRoom={!hri.availableCapacity}>{index + 1}</RoomId>
                     <RoomIcons>{personIcons}</RoomIcons>
@@ -81,51 +100,6 @@ function RoomsHeadingTitle({ showRooms, hotelClickedStates, vacancies }) {
                 </RoomContainer>
               );
             })}
-
-            {/* <RoomContainer fullRoom={true}>
-              <RoomInfo>
-                <RoomId fullRoom={fullRoom}>101</RoomId>
-                <RoomIcons>
-                  {choisenRoom ? (
-                    <BsPersonFill size={30} color={fullRoom ? '#8C8C8C' : '#000000'} />
-                  ) : (
-                    <BsPerson size={30} />
-                  )}
-                  {choisenRoom ? (
-                    <BsPersonFill size={30} color={fullRoom ? '#8C8C8C' : '#000000'} />
-                  ) : (
-                    <BsPerson size={30} />
-                  )}
-                  {choisenRoom ? (
-                    <BsPersonFill size={30} color={fullRoom ? '#8C8C8C' : '#000000'} />
-                  ) : (
-                    <BsPerson size={30} />
-                  )}
-                </RoomIcons>
-              </RoomInfo>
-            </RoomContainer>
-            <RoomContainer fullRoom={fullRoom}>
-              <RoomInfo>
-                <RoomId fullRoom={fullRoom}>101</RoomId>
-                <RoomIcons>
-                  {choisenRoom ? (
-                    <BsPersonFill size={30} color={fullRoom ? '#8C8C8C' : '#000000'} />
-                  ) : (
-                    <BsPerson size={30} />
-                  )}
-                  {choisenRoom ? (
-                    <BsPersonFill size={30} color={fullRoom ? '#8C8C8C' : '#000000'} />
-                  ) : (
-                    <BsPerson size={30} />
-                  )}
-                  {choisenRoom ? (
-                    <BsPersonFill size={30} color={fullRoom ? '#8C8C8C' : '#000000'} />
-                  ) : (
-                    <BsPerson size={30} />
-                  )}
-                </RoomIcons>
-              </RoomInfo>
-            </RoomContainer> */}
           </AllRoomsContainer>
           <SubmitContainer>
             <Button>RESERVAR QUARTO</Button>
@@ -423,7 +397,8 @@ const RoomContainer = styled.div`
   border-radius: 5px;
   margin-right: 15px;
   margin-bottom: 5px;
-  ${(props) => (props.fullRoom ? 'background-color: #e9e9e9;' : '')}
+  /* ${(props) => (props.fullRoom ? 'background-color: #e9e9e9;' : '')} */
+  ${(props) => (props.fullRoom ? 'background-color: #e9e9e9;' : props.chosen ? 'background-color: #FFEED2;' : '')}
 `;
 
 const RoomChoice = styled.div`
