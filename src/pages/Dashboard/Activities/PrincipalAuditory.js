@@ -6,7 +6,7 @@ import { RiLoginBoxLine, RiCloseCircleLine } from 'react-icons/ri';
 
 export default function PrincipalAuditory({ item, getCap }) {
   const [duration, setDuration] = useState();
-  const [cap, setCap] = useState();
+  const [cap, setCap] = useState(0);
 
   function getDuration(start, end) {
     const formatedStart = dayjs(start).format('HH:mm');
@@ -24,8 +24,6 @@ export default function PrincipalAuditory({ item, getCap }) {
     const returnedCap = await getCap(item.id);
     setCap(returnedCap);
   }, []);
-
-  console.log('cap: ', cap);
 
   return (
     <Activity key={item.id} duration={duration}>

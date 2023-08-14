@@ -49,7 +49,6 @@ export default function Activities() {
   }
 
   const handleSelect = (date) => {
-    console.log('oi');
     setSelectedDate(date.formattedDate);
     getActivity(date.originalDate, token);
   };
@@ -87,7 +86,6 @@ export default function Activities() {
 
   async function getActivity(date) {
     try {
-      console.log(date);
       const data = await activityApi.getDailyActivity(date, token);
       setActivitiesList(data.activityByDayList);
       return data;
@@ -112,13 +110,6 @@ export default function Activities() {
     fetchData();
   }, []);
 
-  function getDuration(start, end) {
-    const startTimeObj = dayjs(`2023-08-14T${start}:00.000Z`);
-    const endTimeObj = dayjs(`2023-08-14T${end}:00.000Z`);
-
-    return endTimeObj.diff(startTimeObj, 'hour');
-  }
-
   async function getCap(id) {
     try {
       const data = await activityApi.getCurrentCap(id, token);
@@ -129,39 +120,38 @@ export default function Activities() {
   }
 
   function renderActivity() {
-    if (activitiesList.length === 0) {
-      return <></>;
+    if (activitiesList.length !== 0) {
+      return (
+        <TasksArea>
+          <Place>
+            <h2>Auditório Principal</h2>
+            <TasksWrapper>
+              {activitiesList.map(
+                (item) => item.activityPlaceId === 1 && <PrincipalAuditory item={item} getCap={getCap} key={item.id} />
+              )}
+            </TasksWrapper>
+          </Place>
+
+          <Place>
+            <h2>Auditório Lateral</h2>
+            <TasksWrapper>
+              {activitiesList.map(
+                (item) => item.activityPlaceId === 2 && <PrincipalAuditory item={item} getCap={getCap} key={item.id} />
+              )}
+            </TasksWrapper>
+          </Place>
+
+          <Place>
+            <h2>Sala de Workshop</h2>
+            <TasksWrapper>
+              {activitiesList.map(
+                (item) => item.activityPlaceId === 3 && <PrincipalAuditory item={item} getCap={getCap} key={item.id} />
+              )}
+            </TasksWrapper>
+          </Place>
+        </TasksArea>
+      );
     }
-    return (
-      <TasksArea>
-        <Place>
-          <h2>Auditório Principal</h2>
-          <TasksWrapper>
-            {activitiesList.map(
-              (item) => item.activityPlaceId === 1 && <PrincipalAuditory item={item} getCap={getCap} key={item.id} />
-            )}
-          </TasksWrapper>
-        </Place>
-
-        <Place>
-          <h2>Auditório Lateral</h2>
-          <TasksWrapper>
-            {activitiesList.map(
-              (item) => item.activityPlaceId === 2 && <PrincipalAuditory item={item} getCap={getCap} key={item.id} />
-            )}
-          </TasksWrapper>
-        </Place>
-
-        <Place>
-          <h2>Sala de Workshop</h2>
-          <TasksWrapper>
-            {activitiesList.map(
-              (item) => item.activityPlaceId === 3 && <PrincipalAuditory item={item} getCap={getCap} key={item.id} />
-            )}
-          </TasksWrapper>
-        </Place>
-      </TasksArea>
-    );
   }
 
   useEffect(() => {
