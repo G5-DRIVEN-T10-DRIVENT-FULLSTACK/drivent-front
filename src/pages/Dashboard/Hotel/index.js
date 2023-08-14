@@ -9,9 +9,10 @@ import { useContext } from 'react';
 import * as ticketApi from '../../../services/ticketApi';
 import Button from '../../../components/Form/Button';
 
-function choiceRoomFunction(hotelId, roomId, setRoomIdToBack) {
+function choiceRoomFunction(hotelId, roomId, setRoomIdToBack, capacity) {
   console.log('hotelId', hotelId);
   console.log('roomId', roomId);
+  console.log('capacity', capacity);
   const sendableRoomId = roomId;
   setRoomIdToBack({ roomId: sendableRoomId });
 }
@@ -34,9 +35,9 @@ function RoomsHeadingTitle({ showRooms, hotelClickedStates, vacancies }) {
     const roomsKeys = Object.keys(hotelsIdArrays).filter((key) => Number(hotelsIdArrays[key]) === Number(hotelId));
     // const testArray = roomsKeys;
     hotelRoomsInfo = roomsKeys.map((ta, index) => {
-      console.log(roomIdToBack === ta);
-      console.log('roomIdToBack', roomIdToBack);
-      console.log('ta', ta);
+      // console.log(roomIdToBack === ta);
+      // console.log('roomIdToBack', roomIdToBack);
+      // console.log('ta', ta);
       return {
         id: ta,
         totalCapacity: vacancies.capacity[ta],
@@ -55,40 +56,32 @@ function RoomsHeadingTitle({ showRooms, hotelClickedStates, vacancies }) {
               const personIcons = [];
               for (let i = 0; i < hri.totalCapacity; i++) {
                 if (hri.totalCapacity === hri.availableCapacity) {
-                  personIcons.push(<BsPerson key={i} size={30} />);
+                  if (i === hri.totalCapacity - 1 && hri.choisen) {
+                    personIcons.push(<BsPersonFill key={i} size={30} color={'#FF4791'} />);
+                  } else {
+                    personIcons.push(<BsPerson key={i} size={30} />);
+                  }
                 } else {
                   if (hri.availableCapacity - i) {
-                    personIcons.push(<BsPerson key={i} size={30} />);
+                    if (hri.choisen && hri.availableCapacity - i === 1) {
+                      personIcons.push(<BsPersonFill key={i} size={30} color={'#FF4791'} />);
+                    } else if (hri.availableCapacity - i < 0) {
+                      personIcons.push(
+                        <BsPersonFill key={i} size={30} color={!hri.availableCapacity ? '#8C8C8C' : '#000000'} />
+                      );
+                    } else {
+                      personIcons.push(<BsPerson key={i} size={30} />);
+                    }
                   } else {
                     personIcons.push(
                       <BsPersonFill key={i} size={30} color={!hri.availableCapacity ? '#8C8C8C' : '#000000'} />
                     );
                   }
-                  ///cap = 3; av = 3;
-                  ///av - i = 3 2 1
-                  ///cap = 3; av = 2;
-                  ///av - i = 2 1 0
-                  ///cap = 3; av = 1;
-                  ///av - i = 1 0 -1
-                  ///cap = 3; av = 0;
-                  ///av - i = 0 -1 -2
-                  ///
-                  // personIcons.push(
-                  //   choisenRoom ? (
-                  //     <BsPersonFill
-                  //       key={i}
-                  //       size={30}
-                  //       color={hri.totalCapacity - hri.availableCapacity ? '#8C8C8C' : '#000000'}
-                  //     />
-                  //   ) : (
-                  //     <BsPerson key={i} size={30} />
-                  //   )
-                  // );
                 }
               }
               return (
                 <RoomContainer
-                  onClick={() => choiceRoomFunction(hotelId, hri.id, setRoomIdToBack)}
+                  onClick={() => choiceRoomFunction(hotelId, hri.id, setRoomIdToBack, hri.availableCapacity)}
                   key={hri.id}
                   fullRoom={!hri.availableCapacity}
                   chosen={hri.choisen}
