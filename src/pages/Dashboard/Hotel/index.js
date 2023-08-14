@@ -14,16 +14,25 @@ function selectRoomFunction(hotelId, roomId, setRoomIdToBack, capacity) {
   console.log('roomId', roomId);
   console.log('capacity', capacity);
   const sendableRoomId = roomId;
+  setRoomIdToBack({ roomId: sendableRoomId, hotelId: hotelId });
   setRoomIdToBack({ roomId: sendableRoomId });
 }
 
-export function RoomsHeadingTitle({ showRooms, hotelClickedStates, vacancies, rooms }) {
+export function RoomsHeadingTitle({
+  showRooms,
+  hotelClickedStates,
+  vacancies,
+  rooms,
+  roomIdToBack,
+  setRoomIdToBack,
+  changeRoom,
+}) {
   // console.log('hotelClickedStates', hotelClickedStates);
   // console.log(Object.keys(hotelClickedStates).find((hotelId) => hotelClickedStates[hotelId] === true));
   // console.log('showRooms', showRooms);
   const { userData } = useContext(UserContext);
   console.log(userData);
-  const [roomIdToBack, setRoomIdToBack] = useState({});
+  // const [roomIdToBack, setRoomIdToBack] = useState({});
 
   if (showRooms) {
     console.log('hotelClickedStates', hotelClickedStates);
@@ -39,9 +48,9 @@ export function RoomsHeadingTitle({ showRooms, hotelClickedStates, vacancies, ro
     console.log('roomsKeys', roomsKeys);
     hotelRoomsInfo = roomsKeys.map((ta, index) => {
       // console.log(roomIdToBack === ta);
-      console.log('roomIdToBack', roomIdToBack);
+      // console.log('roomIdToBack', roomIdToBack);
       // console.log('ta', ta);
-      console.log('accommodations'), rooms;
+      // console.log('accommodations'), rooms;
       return {
         id: rooms[ta].id,
         totalCapacity: vacancies.capacity[ta],
@@ -99,7 +108,9 @@ export function RoomsHeadingTitle({ showRooms, hotelClickedStates, vacancies, ro
             })}
           </AllRoomsContainer>
           <SubmitContainer>
-            <Button onClick={async () => await choiceRoomFunction(roomIdToBack, userData)}>RESERVAR QUARTO</Button>
+            <Button onClick={async () => await choiceRoomFunction(roomIdToBack, userData, changeRoom)}>
+              RESERVAR QUARTO
+            </Button>
           </SubmitContainer>
         </RoomChoice>
       </>
@@ -109,20 +120,63 @@ export function RoomsHeadingTitle({ showRooms, hotelClickedStates, vacancies, ro
   }
 }
 
-async function choiceRoomFunction(roomIdToBack, userData) {
+async function choiceRoomFunction(roomIdToBack, userData, changeRoom) {
   const body = { roomId: Number(roomIdToBack.roomId) };
+  //mando no body o novo
 
   try {
+    if (changeRoom) {
+      const response = await api.put(`/booking/${Number(roomIdToBack.roomId)}`, body,  {
+        headers: {
+          Authorization: `Bearer ${userData.token}`,
+        },
+      });
+      return window.location.reload();
+    }
     const response = await api.post('/booking', body, {
       headers: {
         Authorization: `Bearer ${userData.token}`,
       },
     });
-
     console.log('response, booking', response);
+    window.location.reload();
   } catch (e) {
     return console.log(e.message);
   }
+}
+
+function changeRoomFunc(setChangeRoom) {
+  setChangeRoom(true);
+}
+
+function HotelOrderInfo({ isBooking, changeRoom, setChangeRoom }) {
+  // console.log('roomIdToBack', roomIdToBack);
+  console.log('!!changeRoom', !!changeRoom);
+  // console.log('isBooking ', isBooking);
+  // console.log('isBooking !== false', isBooking !== false);
+  if (!!isBooking && !changeRoom) {
+    console.log('isBooking', isBooking);
+    return (
+      <>
+        <HotelOrderInfoContainer>
+          <RoomsHeadingTitleStyle>Você já escolheu seu quarto:</RoomsHeadingTitleStyle>
+          <HotelInfoContainer clicked={true}>
+            <HotelImage src={isBooking.Room.hotelImage} />
+            <HotelName>{isBooking.Room.hotelName}</HotelName>
+            <HotelSubtitle>Quarto reservado:</HotelSubtitle>
+            <HotelInfo>
+              {isBooking.Room.id} ({isBooking.Room.stringCapacity})
+            </HotelInfo>
+            <HotelSubtitle>Pessoas no seu quarto</HotelSubtitle>
+            <HotelInfo>{isBooking.Room.availableCap}</HotelInfo>
+          </HotelInfoContainer>
+          <SubmitContainer>
+            <Button onClick={() => changeRoomFunc(setChangeRoom)}>TROCAR DE QUARTO</Button>
+          </SubmitContainer>
+        </HotelOrderInfoContainer>
+      </>
+    );
+  } else return <></>;
 }
 
 function ProblemMessage({ hotelProblem }) {
@@ -145,9 +199,10 @@ function ProblemMessage({ hotelProblem }) {
     return <></>;
   }
 }
-function HotelChoice({ hotelProblem, hotels, vacancies, rooms }) {
+function HotelChoice({ hotelProblem, hotels, vacancies, rooms, isBooking, roomIdToBack, setRoomIdToBack, changeRoom }) {
   const [hotelClickedStates, setHotelClickedStates] = useState({});
   const [showRooms, setShowRooms] = useState(false);
+  // const [roomIdToBack, setRoomIdToBack] = useState({});
 
   useEffect(() => {
     // Inicialize o objeto de estados vazio
@@ -176,8 +231,9 @@ function HotelChoice({ hotelProblem, hotels, vacancies, rooms }) {
     // console.log(showRooms);
     // console.log(newObject);
   };
-
-  if (hotelProblem === 'NoError' && hotels.length !== 0) {
+  // console.log('isBooking', isBooking);
+  // if (hotelProblem === 'NoError' && hotels.length !== 0) {
+  if ((hotelProblem === 'NoError' && hotels.length !== 0 && !isBooking) || changeRoom) {
     console.log('hotels', hotels);
     const allHotelCap = [];
     allHotelCap?.push(Number(hotels[0].vacanciesSum));
@@ -213,6 +269,9 @@ function HotelChoice({ hotelProblem, hotels, vacancies, rooms }) {
             hotelClickedStates={hotelClickedStates}
             vacancies={vacancies}
             rooms={rooms}
+            roomIdToBack={roomIdToBack}
+            setRoomIdToBack={setRoomIdToBack}
+            changeRoom={changeRoom}
           />
         </HotelsContainer>
       </>
@@ -231,6 +290,9 @@ export default function Hotel() {
   const [vacancies, setVacancies] = useState([]);
   const [ticketType, setTicketType] = useState(null);
   const [userTicket, setUserTicket] = useState(null);
+  const [isBooking, setIsBooking] = useState(null);
+  const [roomIdToBack, setRoomIdToBack] = useState({});
+  const [changeRoom, setChangeRoom] = useState(false);
 
   async function getUserTicket() {
     try {
@@ -271,10 +333,80 @@ export default function Hotel() {
       // console.log('response.data.accommodation', response.data.accommodation);
       // console.log('response.data.vacancies', response.data.vacancies);
       setHotelProblemKind('NoError');
-      return setHotels(response.data.hotels);
+      setHotels(response.data.hotels);
+      return response.data;
     } catch (error) {
       // console.log(error.message);
       return setHotelProblemKind(error.message);
+    }
+  }
+
+  async function isBookingFunc(superGetData) {
+    console.log('isBookingFunc');
+    try {
+      const response = await api.get('/booking', {
+        headers: {
+          Authorization: `Bearer ${userData.token}`,
+        },
+      });
+      const bookingObject = response.data;
+      console.log('bookingObject', bookingObject);
+      console.log('superGetData', superGetData);
+      const hotelObject = superGetData.hotels.find((h) => h.id === bookingObject.Room.hotelId);
+      console.log('hotelObject', hotelObject);
+      console.log('superGetData.vacancies.hotelIdArray', superGetData.vacancies.hotelIdArray);
+      const roomsKeys = Object.keys(superGetData.vacancies.hotelIdArray).filter(
+        (key) => Number(superGetData.vacancies.hotelIdArray[key]) === bookingObject.Room.hotelId
+      );
+      console.log('roomsKeys', roomsKeys);
+
+      const hotelRoomsInfo = roomsKeys.map((ta) => {
+        return {
+          id: superGetData.rooms[ta].id,
+          totalCapacity: superGetData.vacancies.capacity[ta],
+          availableCapacity: superGetData.vacancies.hotelVacanciesArray[ta],
+        };
+      });
+      console.log('hotelRoomsInfo', hotelRoomsInfo);
+      console.log('bookingObject.Room.hotelId', bookingObject.Room.id);
+      const roomObject = hotelRoomsInfo.find((hr) => hr.id === bookingObject.Room.id);
+
+      console.log('roomObject', roomObject);
+
+      if (roomObject.totalCapacity === 1) {
+        bookingObject.Room.availableCap = 'Apenas você no quarto';
+        bookingObject.Room.stringCapacity = 'Single';
+      } else if (roomObject.totalCapacity === 2 && roomObject.availableCapacity == 0) {
+        bookingObject.Room.availableCap = 'Você e mais 1';
+        bookingObject.Room.stringCapacity = 'Double';
+      } else if (roomObject.totalCapacity === 2 && roomObject.availableCapacity === 1) {
+        bookingObject.Room.availableCap = 'Apenas você no quarto';
+        bookingObject.Room.stringCapacity = 'Double';
+      } else if (roomObject.totalCapacity === 3 && roomObject.availableCapacity === 2) {
+        bookingObject.Room.availableCap = 'Apenas você no quarto';
+        bookingObject.Room.stringCapacity = 'Triple';
+      } else if (roomObject.totalCapacity === 3 && roomObject.availableCapacity == 1) {
+        bookingObject.Room.availableCap = 'Você e mais 1';
+        bookingObject.Room.stringCapacity = 'Triple';
+      } else if (roomObject.totalCapacity === 3 && roomObject.availableCapacity == 0) {
+        // console.log('aqui');
+        bookingObject.Room.availableCap = 'Você e mais 2';
+        bookingObject.Room.stringCapacity = 'Triple';
+      }
+
+      bookingObject.Room.hotelName = hotelObject.name;
+      bookingObject.Room.hotelImage = hotelObject.image;
+      // bookingObject.Room.stringCapacity = hotelObject.accommodation;
+
+      setIsBooking(bookingObject);
+      return bookingObject;
+    } catch (error) {
+      /* eslint-disable-next-line no-console */
+      if (error.message.includes('404')) {
+        setIsBooking(false);
+      }
+      console.log("error.message.includes('404')", error.message.includes('404'));
+      console.log(error.message);
     }
   }
 
@@ -303,10 +435,13 @@ export default function Hotel() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        await getHotels();
+        const response = await getHotels();
         const userTicket = await getUserTicket();
         // console.log('userTicket', userTicket);
         await isRemoteFunc(userTicket);
+        // console.log('response', response);
+        // const stringCapacity = re
+        await isBookingFunc(response);
       } catch (error) {
         console.error('Error:', error);
       }
@@ -319,11 +454,34 @@ export default function Hotel() {
       <StyledTypography variant="h4">Escolha de hotel e quarto</StyledTypography>
       <HotelContent>
         <ProblemMessage hotelProblem={hotelProblemKind} />
-        <HotelChoice hotels={hotels} hotelProblem={hotelProblemKind} vacancies={vacancies} rooms={rooms} />
+        <HotelChoice
+          hotels={hotels}
+          hotelProblem={hotelProblemKind}
+          vacancies={vacancies}
+          rooms={rooms}
+          isBooking={isBooking}
+          roomIdToBack={roomIdToBack}
+          setRoomIdToBack={setRoomIdToBack}
+          changeRoom={changeRoom}
+          setChangeRoom={setChangeRoom}
+        />
+        <HotelOrderInfo
+          isBooking={isBooking}
+          changeRoom={changeRoom}
+          setChangeRoom={setChangeRoom}
+          setIsBooking={setIsBooking}
+          roomIdToBack={roomIdToBack}
+        />
       </HotelContent>
     </>
   );
 }
+
+const HotelOrderInfoContainer = styled.div`
+  position: absolute;
+  top: 0px;
+  left: 0px;
+`;
 
 const StyledTypography = styled(Typography)`
   margin-bottom: 20px !important;
