@@ -7,6 +7,7 @@ import { BsPerson, BsPersonFill } from 'react-icons/bs';
 import UserContext from '../../../contexts/UserContext';
 import { useContext } from 'react';
 import * as ticketApi from '../../../services/ticketApi';
+import Button from '../../../components/Form/Button';
 
 function RoomsHeadingTitle({ showRooms, hotelClickedStates, vacancies }) {
   // console.log('hotelClickedStates', hotelClickedStates);
@@ -45,11 +46,7 @@ function RoomsHeadingTitle({ showRooms, hotelClickedStates, vacancies }) {
                     personIcons.push(<BsPerson key={i} size={30} />);
                   } else {
                     personIcons.push(
-                      <BsPersonFill
-                        key={i}
-                        size={30}
-                        color={!hri.availableCapacity ? '#8C8C8C' : '#000000'}
-                      />
+                      <BsPersonFill key={i} size={30} color={!hri.availableCapacity ? '#8C8C8C' : '#000000'} />
                     );
                   }
                   ///i = 0 1 2
@@ -130,6 +127,9 @@ function RoomsHeadingTitle({ showRooms, hotelClickedStates, vacancies }) {
               </RoomInfo>
             </RoomContainer> */}
           </AllRoomsContainer>
+          <SubmitContainer>
+            <Button>RESERVAR QUARTO</Button>
+          </SubmitContainer>
         </RoomChoice>
       </>
     );
@@ -451,4 +451,13 @@ const RoomInfo = styled.div`
   align-items: center;
   justify-content: space-between;
   margin: 5px;
+`;
+
+const SubmitContainer = styled.div`
+  margin-top: 40px !important;
+  width: 100% !important;
+
+  > button {
+    margin-top: 0 !important;
+  }
 `;
