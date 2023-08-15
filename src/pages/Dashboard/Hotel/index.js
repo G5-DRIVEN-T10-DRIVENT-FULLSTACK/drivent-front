@@ -10,9 +10,9 @@ import * as ticketApi from '../../../services/ticketApi';
 import Button from '../../../components/Form/Button';
 
 function selectRoomFunction(hotelId, roomId, setRoomIdToBack, capacity) {
-  console.log('hotelId', hotelId);
-  console.log('roomId', roomId);
-  console.log('capacity', capacity);
+  // console.log('hotelId', hotelId);
+  // console.log('roomId', roomId);
+  // console.log('capacity', capacity);
   const sendableRoomId = roomId;
   setRoomIdToBack({ roomId: sendableRoomId, hotelId: hotelId });
   setRoomIdToBack({ roomId: sendableRoomId });
@@ -31,21 +31,21 @@ export function RoomsHeadingTitle({
   // console.log(Object.keys(hotelClickedStates).find((hotelId) => hotelClickedStates[hotelId] === true));
   // console.log('showRooms', showRooms);
   const { userData } = useContext(UserContext);
-  console.log(userData);
+  // console.log(userData);
   // const [roomIdToBack, setRoomIdToBack] = useState({});
 
   if (showRooms) {
-    console.log('hotelClickedStates', hotelClickedStates);
+    // console.log('hotelClickedStates', hotelClickedStates);
     const hotelId = Object.keys(hotelClickedStates).find((hotelId) => hotelClickedStates[hotelId] === true);
     // console.log('hotelId', hotelId);
     let hotelRoomsInfo = [];
-    console.log('vacancies', vacancies);
-    console.log('vacancies.capacity', vacancies.capacity);
+    // console.log('vacancies', vacancies);
+    // console.log('vacancies.capacity', vacancies.capacity);
     const hotelsIdArrays = vacancies.hotelIdArray;
     // console.log('hotelsIdArrays', hotelsIdArrays);
     // console.log('hotelId', hotelId);
     const roomsKeys = Object.keys(hotelsIdArrays).filter((key) => Number(hotelsIdArrays[key]) === Number(hotelId));
-    console.log('roomsKeys', roomsKeys);
+    // console.log('roomsKeys', roomsKeys);
     hotelRoomsInfo = roomsKeys.map((ta, index) => {
       // console.log(roomIdToBack === ta);
       // console.log('roomIdToBack', roomIdToBack);
@@ -58,7 +58,7 @@ export function RoomsHeadingTitle({
         choisen: roomIdToBack.roomId === rooms[ta].id ? true : false,
       };
     });
-    console.log('hotelRoomsInfo', hotelRoomsInfo);
+    // console.log('hotelRoomsInfo', hotelRoomsInfo);
     // console.log('testArray', testArray);
     return (
       <>
@@ -138,7 +138,7 @@ async function choiceRoomFunction(roomIdToBack, userData, changeRoom) {
         Authorization: `Bearer ${userData.token}`,
       },
     });
-    console.log('response, booking', response);
+    // console.log('response, booking', response);
     window.location.reload();
   } catch (e) {
     return console.log(e.message);
@@ -151,11 +151,11 @@ function changeRoomFunc(setChangeRoom) {
 
 function HotelOrderInfo({ isBooking, changeRoom, setChangeRoom }) {
   // console.log('roomIdToBack', roomIdToBack);
-  console.log('!!changeRoom', !!changeRoom);
+  // console.log('!!changeRoom', !!changeRoom);
   // console.log('isBooking ', isBooking);
   // console.log('isBooking !== false', isBooking !== false);
   if (!!isBooking && !changeRoom) {
-    console.log('isBooking', isBooking);
+    // console.log('isBooking', isBooking);
     return (
       <>
         <HotelOrderInfoContainer>
@@ -234,16 +234,16 @@ function HotelChoice({ hotelProblem, hotels, vacancies, rooms, isBooking, roomId
   // console.log('isBooking', isBooking);
   // if (hotelProblem === 'NoError' && hotels.length !== 0) {
   if ((hotelProblem === 'NoError' && hotels.length !== 0 && !isBooking) || changeRoom) {
-    console.log('hotels', hotels);
+    // console.log('hotels', hotels);
     const allHotelCap = [];
     allHotelCap?.push(Number(hotels[0].vacanciesSum));
-    console.log('allHotelCap', allHotelCap);
+    // console.log('allHotelCap', allHotelCap);
     let sub = 0;
     for (let i = 1; i < hotels.length; i++) {
       sub += allHotelCap[i - 1];
       allHotelCap.push(Number(hotels[i].vacanciesSum) - sub);
     }
-    console.log('allHotelCap', allHotelCap);
+    // console.log('allHotelCap', allHotelCap);
     return (
       <>
         <HotelChoiceContainer>Primeiro, escolha seu hotel</HotelChoiceContainer>
@@ -314,7 +314,7 @@ export default function Hotel() {
       });
 
       // console.log(response.data.accommodation);
-      console.log(response.data);
+      // console.log(response.data);
       const roomsObject = response.data.rooms;
       const vacanciesObject = response.data.vacancies;
 
@@ -323,7 +323,7 @@ export default function Hotel() {
         return acc;
       }, []);
       vacanciesObject.capacity = capacityArray;
-      console.log('response.data', response.data);
+      // console.log('response.data', response.data);
 
       setRooms(response.data.rooms);
       setVacancies(vacanciesObject);
@@ -336,13 +336,13 @@ export default function Hotel() {
       setHotels(response.data.hotels);
       return response.data;
     } catch (error) {
-      // console.log(error.message);
+      console.log(error.message);
       return setHotelProblemKind(error.message);
     }
   }
 
   async function isBookingFunc(superGetData) {
-    console.log('isBookingFunc');
+    // console.log('isBookingFunc');
     try {
       const response = await api.get('/booking', {
         headers: {
@@ -350,15 +350,15 @@ export default function Hotel() {
         },
       });
       const bookingObject = response.data;
-      console.log('bookingObject', bookingObject);
-      console.log('superGetData', superGetData);
+      // console.log('bookingObject', bookingObject);
+      // console.log('superGetData', superGetData);
       const hotelObject = superGetData.hotels.find((h) => h.id === bookingObject.Room.hotelId);
-      console.log('hotelObject', hotelObject);
-      console.log('superGetData.vacancies.hotelIdArray', superGetData.vacancies.hotelIdArray);
+      // console.log('hotelObject', hotelObject);
+      // console.log('superGetData.vacancies.hotelIdArray', superGetData.vacancies.hotelIdArray);
       const roomsKeys = Object.keys(superGetData.vacancies.hotelIdArray).filter(
         (key) => Number(superGetData.vacancies.hotelIdArray[key]) === bookingObject.Room.hotelId
       );
-      console.log('roomsKeys', roomsKeys);
+      // console.log('roomsKeys', roomsKeys);
 
       const hotelRoomsInfo = roomsKeys.map((ta) => {
         return {
@@ -367,11 +367,11 @@ export default function Hotel() {
           availableCapacity: superGetData.vacancies.hotelVacanciesArray[ta],
         };
       });
-      console.log('hotelRoomsInfo', hotelRoomsInfo);
-      console.log('bookingObject.Room.hotelId', bookingObject.Room.id);
+      // console.log('hotelRoomsInfo', hotelRoomsInfo);
+      // console.log('bookingObject.Room.hotelId', bookingObject.Room.id);
       const roomObject = hotelRoomsInfo.find((hr) => hr.id === bookingObject.Room.id);
 
-      console.log('roomObject', roomObject);
+      // console.log('roomObject', roomObject);
 
       if (roomObject.totalCapacity === 1) {
         bookingObject.Room.availableCap = 'Apenas você no quarto';
@@ -571,7 +571,7 @@ const RoomsHeadingTitleStyle = styled.p`
   color: #8e8e8e;
   font-size: 20px;
   font-weight: 400;
-  margin-top: 50px;
+  margin-top: 15px;
   margin-bottom: 30px;
 `;
 

@@ -37,7 +37,7 @@ export default function SignIn() {
       console.log(code);
       try {
         setLoading(true);
-        const response = await axios.post('http://localhost:4000/auth/github/token', { code });
+        const response = await axios.post('http://localhost:4000/auth/sign-in/github', { code });
         console.log(response.data);
         const result = response.data;
         localStorage.setItem('userData', JSON.stringify(result));
