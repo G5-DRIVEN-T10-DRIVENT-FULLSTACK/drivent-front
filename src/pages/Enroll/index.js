@@ -21,7 +21,7 @@ export default function Enroll() {
   const { loadingSignUp, signUp } = useSignUp();
 
   const navigate = useNavigate();
-  
+
   const { eventInfo } = useContext(EventInfoContext);
 
   async function submit(event) {
@@ -43,7 +43,7 @@ export default function Enroll() {
   return (
     <AuthLayout background={eventInfo.backgroundImageUrl}>
       <Row>
-        <img src={eventInfo.logoImageUrl} alt="Event Logo" width="60px" />
+        {/*<img src={eventInfo.logoImageUrl} alt="Event Logo" width="60px" />*/}
         <Title>{eventInfo.title}</Title>
       </Row>
       <Row>

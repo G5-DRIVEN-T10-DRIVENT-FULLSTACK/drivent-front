@@ -262,7 +262,7 @@ export default function PersonalInformationForm() {
               onChange={handleChange('addressDetail')}
             />
           </InputWrapper>
-          
+
           <SubmitContainer>
             <Button type="submit" disabled={dynamicInputIsLoading || saveEnrollmentLoading}>
               Salvar
